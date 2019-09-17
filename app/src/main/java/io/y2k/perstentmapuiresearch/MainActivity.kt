@@ -4,6 +4,7 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
+import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
 import io.y2k.research.children
 import io.y2k.research.type
@@ -48,13 +49,13 @@ object Interpreter {
 
     private fun setProperty(view: View, key: String, value: Any) {
         val setterName = makeSetterName(key)
-        val setter = view::class.java.declaredMethods
+        val setter = view::class.java.methods
             .find {
                 it.name == setterName
                         && it.parameterTypes.size == 1
                         && isAssignableFrom(it.parameterTypes[0], value)
             }
-            ?: error("key=$key, setterName=$setterName, type=${value::class.java.simpleName}")
+            ?: error("view=${view::class.java.simpleName}, method=$setterName, type=${value::class.java.simpleName}")
         setter(view, value)
     }
 

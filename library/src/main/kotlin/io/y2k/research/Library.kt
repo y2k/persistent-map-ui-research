@@ -27,11 +27,27 @@ fun view(items: PersistentList<User>) = run {
         type to "LinearLayout",
         "orientation" to 1,
         children to persistentListOf(
+            persistentMapOf(
+                type to "EditText",
+                "hint" to "New todo item"
+            ),
+            persistentMapOf(
+                type to "LinearLayout",
+                children to persistentListOf(
+                    persistentMapOf(
+                        type to "Button",
+                        "text" to "Add"
+                    ),
+                    persistentMapOf(
+                        type to "Button",
+                        "text" to "Remove all"
+                    )
+                )
+            ),
             h1("Todo Items:"),
             persistentMapOf(
                 type to "LinearLayout",
                 "orientation" to 1,
-//                "layoutParams.weight" to 1f,
                 children to items.map { toChildView(it) }.toPersistentList()
             )
         )
