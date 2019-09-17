@@ -1,18 +1,17 @@
 package io.y2k.research
 
 import kotlinx.collections.immutable.*
+import kotlinx.coroutines.channels.Channel
 
-class User(val name: String)
+class Item(val name: String)
 
 const val type = "@"
 const val children = "children"
 
-fun view() =
-    List(10) { User("Item #${it + 1}") }
-        .toPersistentList()
-        .let { view(it) }
+fun Statefull<State>.view() =
+    view(state.todos)
 
-fun view(items: PersistentList<User>) = run {
+fun Statefull<State>.view(items: Iterable<Item>) = run {
     fun h1(title: String, vararg extra: Pair<String, Any>) =
         persistentMapOf(
             type to "TextView",
@@ -20,7 +19,7 @@ fun view(items: PersistentList<User>) = run {
             "text" to title
         ).putAll(extra)
 
-    fun toChildView(user: User) =
+    fun toChildView(user: Item) =
         h1("Item (${user.name})", "textSize" to 16f)
 
     persistentMapOf(
@@ -40,7 +39,10 @@ fun view(items: PersistentList<User>) = run {
                     ),
                     persistentMapOf(
                         type to "Button",
-                        "text" to "Remove all"
+                        "text" to "Remove all",
+                        "onClickListener" to {
+                            dispatch { it.copy(todos = persistentListOf()) to Unit }
+                        }
                     )
                 )
             ),
@@ -52,4 +54,21 @@ fun view(items: PersistentList<User>) = run {
             )
         )
     )
+}
+
+data class State(val todos: PersistentList<Item> = persistentListOf())
+
+class Statefull<State>(var state: State) {
+
+    private val channel = Channel<Unit>(0)
+
+    suspend fun whatForUpdate(): Unit = channel.receive()
+
+    fun <T> dispatch(f: (State) -> Pair<State, T>): T {
+        val (s, r) = f(state)
+        state = s
+        while (channel.offer(Unit)) {
+        }
+        return r
+    }
 }

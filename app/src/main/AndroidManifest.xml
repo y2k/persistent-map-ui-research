@@ -3,15 +3,11 @@
           package="io.y2k.perstentmapuiresearch">
 
     <application
-            android:allowBackup="true"
+            android:theme="@style/Theme.AppCompat.Light"
             android:label="Persistent Map UI">
         <activity android:name=".MainActivity"
-                  android:theme="@style/Theme.AppCompat.Light">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN"/>
-                <category android:name="android.intent.category.LAUNCHER"/>
-            </intent-filter>
-        </activity>
+                  android:exported="true"/>
+        <activity android:name=".WeatherActivity"
+                  android:exported="true"/>
     </application>
-
 </manifest>

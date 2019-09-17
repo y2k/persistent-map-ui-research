@@ -4,22 +4,28 @@ import android.content.Context
 import android.os.Bundle
 import android.view.View
 import android.view.ViewGroup
-import android.widget.EditText
 import androidx.appcompat.app.AppCompatActivity
-import io.y2k.research.children
-import io.y2k.research.type
-import io.y2k.research.view
+import io.y2k.research.*
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.MainScope
+import kotlinx.coroutines.launch
 
-class MainActivity : AppCompatActivity() {
+class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        view()
-            .let { Interpreter.convert(this, it) }
-            .let { setContentView(it) }
+        val state = Statefull(State())
+        launch {
+            while (true) {
+                state.whatForUpdate()
+                state.view()
+                    .let { Interpreter.convert(this@MainActivity, it) }
+                    .let { setContentView(it) }
+            }
+        }
     }
 }
 
