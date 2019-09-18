@@ -44,16 +44,23 @@ fun Statefull<WeatherState>.weatherView() =
 
 fun Statefull<WeatherState>.reloadWeather() {
     GlobalScope.launch {
-        dispatch { db -> preload(db) to Unit }
-        val r = runCatching { loadWeatherFromWeb<WeatherResponse>(makeRequest()) }
-        dispatch { db -> update(db, r) to Unit }
+        dispatch(::preload)
+            .let { runCatching { loadWeatherFromWeb<WeatherResponse>(it) } }
+            .let { dispatch { db -> update(db, it) to Unit } }
     }
 }
 
-fun preload(db: WeatherState): WeatherState =
-    db.copy(temperature = "...", error = "")
+private fun preload(db: WeatherState): Pair<WeatherState, HttpRequestBuilder> {
+    fun mkRequest() =
+        request {
+            val city = "Saint+Petersburg"
+            url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
+        }
 
-private fun update(db: WeatherState, response: Result<WeatherResponse>): WeatherState = run {
+    return db.copy(temperature = "...", error = "") to mkRequest()
+}
+
+private fun update(db: WeatherState, response: Result<WeatherResponse>) = run {
     fun mapToTemperature(response: WeatherResponse) =
         response.main.temp
 
@@ -62,12 +69,6 @@ private fun update(db: WeatherState, response: Result<WeatherResponse>): Weather
         { db.copy(error = "Error", temperature = "--") }
     )
 }
-
-private fun makeRequest() =
-    request {
-        val city = "Saint+Petersburg"
-        url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
-    }
 
 suspend inline fun <reified T> loadWeatherFromWeb(r: HttpRequestBuilder): T {
     val client = HttpClient(AndroidClientEngine(AndroidEngineConfig())) {

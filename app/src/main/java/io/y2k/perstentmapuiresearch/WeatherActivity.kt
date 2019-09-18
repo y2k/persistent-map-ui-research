@@ -19,11 +19,12 @@ class WeatherActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val state = Statefull(WeatherState())
         launch {
+            val listener = state.makeListener()
             while (true) {
                 state.weatherView()
                     .let { Interpreter.convert(this@WeatherActivity, it) }
                     .let { setContentView(it) }
-                state.whatForUpdate()
+                listener.receive()
             }
         }
     }

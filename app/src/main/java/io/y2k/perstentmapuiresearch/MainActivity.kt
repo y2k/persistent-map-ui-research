@@ -16,11 +16,12 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         val state = Statefull(State())
         launch {
+            val listener = state.makeListener()
             while (true) {
                 state.view()
                     .let { Interpreter.convert(this@MainActivity, it) }
                     .let { setContentView(it) }
-                state.whatForUpdate()
+                listener.receive()
             }
         }
     }

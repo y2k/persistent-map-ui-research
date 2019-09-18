@@ -1,6 +1,7 @@
 package io.y2k.research
 
 import kotlinx.collections.immutable.*
+import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 
 class Item(val name: String)
@@ -58,17 +59,17 @@ fun Statefull<State>.view(items: Iterable<Item>) = run {
 
 data class State(val todos: PersistentList<Item> = persistentListOf())
 
+@Suppress("EXPERIMENTAL_API_USAGE")
 class Statefull<State>(var state: State) {
 
-    private val channel = Channel<Unit>(0)
+    private val channel = BroadcastChannel<Unit>(Channel.CONFLATED)
 
-    suspend fun whatForUpdate(): Unit = channel.receive()
+    fun makeListener() = channel.openSubscription()
 
     fun <T> dispatch(f: (State) -> Pair<State, T>): T {
         val (s, r) = f(state)
         state = s
-        while (channel.offer(Unit)) {
-        }
+        channel.offer(Unit)
         return r
     }
 }
