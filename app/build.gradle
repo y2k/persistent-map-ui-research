@@ -12,8 +12,21 @@ android {
         versionName "1.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
+
+    packagingOptions {
+        exclude 'META-INF/kotlinx-io.kotlin_module'
+        exclude 'META-INF/atomicfu.kotlin_module'
+        exclude 'META-INF/kotlinx-coroutines-io.kotlin_module'
+        exclude 'META-INF/kotlinx-coroutines-core.kotlin_module'
+        exclude 'META-INF/kotlinx-serialization-runtime.kotlin_module'
+    }
+
     buildTypes {
+        debug {
+            buildConfigField "java.lang.String", "WEATHER_API", '"' + project.properties['weatherApi'] + '"'
+        }
         release {
+            buildConfigField "java.lang.String", "WEATHER_API", '"' + project.properties['weatherApi'] + '"'
             minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
