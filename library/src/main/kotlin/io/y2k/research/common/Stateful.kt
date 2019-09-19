@@ -21,6 +21,9 @@ class Stateful<State>(var state: State) {
     }
 }
 
+inline fun <State> Stateful<State>.update(crossinline f: (State) -> State) =
+    dispatch { f(it) to Unit }
+
 const val type = "@"
 const val children = "children"
 

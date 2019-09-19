@@ -46,7 +46,7 @@ fun Stateful<WeatherState>.weatherView() =
             persistentMapOf(
                 type to "Button",
                 "text" to "Reload",
-                "onClickListener" to λ { reloadWeather() }
+                "onClickListener" to λ(::reloadWeather)
             )
         )
     )

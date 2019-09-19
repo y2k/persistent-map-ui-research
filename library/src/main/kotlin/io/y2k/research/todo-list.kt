@@ -1,20 +1,17 @@
 package io.y2k.research
 
-import io.y2k.research.common.Stateful
-import io.y2k.research.common.children
-import io.y2k.research.common.type
-import io.y2k.research.common.λ
+import io.y2k.research.common.*
 import kotlinx.collections.immutable.*
 
 data class State(val text: String = "", val todos: PersistentList<Item> = persistentListOf())
-data class Item(val name: String)
+data class Item(val text: String)
 
 fun Stateful<State>.view() = run {
     fun h1(text: String, vararg extra: Pair<String, Any>) =
         persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text) + extra
 
-    fun itemView(user: Item) =
-        h1("'${user.name}'", "textSize" to 16f)
+    fun itemView(item: Item) =
+        h1("'${item.text}'", "textSize" to 16f)
 
     persistentMapOf(
         type to "LinearLayout",
@@ -23,7 +20,7 @@ fun Stateful<State>.view() = run {
             persistentMapOf(
                 type to "EditTextWrapper",
                 "text" to state.text,
-                "onTextListener" to λ<String> { dispatch { db -> WeatherDomain.updateText(db, it) to Unit } },
+                "onTextListener" to λ<String> { update { db -> WeatherDomain.updateText(db, it) } },
                 children to persistentListOf(
                     persistentMapOf(
                         type to "EditText",
@@ -38,12 +35,12 @@ fun Stateful<State>.view() = run {
                     persistentMapOf(
                         type to "Button",
                         "text" to "Add",
-                        "onClickListener" to λ { dispatch { WeatherDomain.addTodo(it) to Unit } }
+                        "onClickListener" to λ { update(WeatherDomain::addTodo) }
                     ),
                     persistentMapOf(
                         type to "Button",
                         "text" to "Remove all",
-                        "onClickListener" to λ { dispatch { WeatherDomain.removeAllTodos(it) to Unit } }
+                        "onClickListener" to λ { update(WeatherDomain::removeAllTodos) }
                     )
                 )
             ),
