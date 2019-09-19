@@ -9,9 +9,10 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.request
 import io.ktor.client.request.url
-import io.y2k.research.common.Statefull
+import io.y2k.research.common.Stateful
 import io.y2k.research.common.children
 import io.y2k.research.common.type
+import io.y2k.research.common.λ
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.GlobalScope
@@ -26,7 +27,7 @@ class WeatherResponse(val main: Main) {
     class Main(val temp: Double)
 }
 
-fun Statefull<WeatherState>.weatherView() =
+fun Stateful<WeatherState>.weatherView() =
     persistentMapOf(
         type to "LinearLayout",
         "orientation" to 1,
@@ -45,12 +46,12 @@ fun Statefull<WeatherState>.weatherView() =
             persistentMapOf(
                 type to "Button",
                 "text" to "Reload",
-                "onClickListener" to { reloadWeather() }
+                "onClickListener" to λ { reloadWeather() }
             )
         )
     )
 
-fun Statefull<WeatherState>.reloadWeather() {
+fun Stateful<WeatherState>.reloadWeather() {
     GlobalScope.launch {
         dispatch { db -> TodoListDomain.preload(db) }
             .let { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(it) } }

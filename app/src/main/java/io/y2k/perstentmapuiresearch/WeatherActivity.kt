@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import io.y2k.research.Effects
-import io.y2k.research.common.Statefull
+import io.y2k.research.common.Stateful
 import io.y2k.research.WeatherState
 import io.y2k.research.weatherView
 import kotlinx.collections.immutable.PersistentMap
@@ -24,7 +24,7 @@ class WeatherActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Effects.apiKey = BuildConfig.WEATHER_API
         setContentView(root)
 
-        val state = Statefull(WeatherState())
+        val state = Stateful(WeatherState())
         launch {
             val listener = state.makeListener()
             while (true) {

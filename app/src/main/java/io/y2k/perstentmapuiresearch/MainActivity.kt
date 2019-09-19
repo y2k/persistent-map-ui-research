@@ -4,7 +4,7 @@ import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import io.y2k.research.State
-import io.y2k.research.common.Statefull
+import io.y2k.research.common.Stateful
 import io.y2k.research.view
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
@@ -22,7 +22,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val state = Statefull(State())
+        val state = Stateful(State())
         launch {
             val listener = state.makeListener()
             while (true) {

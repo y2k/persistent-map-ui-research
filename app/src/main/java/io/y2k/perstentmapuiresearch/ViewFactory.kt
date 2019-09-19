@@ -5,6 +5,7 @@ import android.view.View
 import android.view.ViewGroup
 import io.y2k.research.common.children
 import io.y2k.research.common.type
+import io.y2k.research.common.λ
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import java.lang.reflect.Proxy
@@ -43,8 +44,7 @@ object ViewFactory {
                 ?: error("view=${view::class.java.simpleName}, method=$setterName, type=${value::class.java.simpleName}")
             val listener =
                 Proxy.newProxyInstance(view::class.java.classLoader, arrayOf(setter.parameterTypes[0])) { _, _, args ->
-                    (value as? () -> Unit)?.invoke()
-                    (value as? (Any?) -> Unit)?.invoke(args[0])
+                    (value as λ<Any>).f(args[0])
                 }
             setter(view, listener)
         } else {

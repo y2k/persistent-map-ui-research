@@ -1,14 +1,15 @@
 package io.y2k.research
 
-import io.y2k.research.common.Statefull
+import io.y2k.research.common.Stateful
 import io.y2k.research.common.children
 import io.y2k.research.common.type
+import io.y2k.research.common.λ
 import kotlinx.collections.immutable.*
 
 data class State(val text: String = "", val todos: PersistentList<Item> = persistentListOf())
 data class Item(val name: String)
 
-fun Statefull<State>.view() = run {
+fun Stateful<State>.view() = run {
     fun h1(text: String, vararg extra: Pair<String, Any>) =
         persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text).putAll(extra)
 
@@ -22,7 +23,7 @@ fun Statefull<State>.view() = run {
             persistentMapOf(
                 type to "EditTextWrapper",
                 "text" to state.text,
-                "onEditListener" to { x: String -> dispatch { db -> WeatherDomain.updateText(db, x) to Unit } },
+                "onEditListener" to λ<String> { dispatch { db -> WeatherDomain.updateText(db, it) to Unit } },
                 children to persistentListOf(
                     persistentMapOf(
                         type to "EditText",
@@ -37,12 +38,12 @@ fun Statefull<State>.view() = run {
                     persistentMapOf(
                         type to "Button",
                         "text" to "Add",
-                        "onClickListener" to { dispatch { WeatherDomain.addTodo(it) to Unit } }
+                        "onClickListener" to λ { dispatch { WeatherDomain.addTodo(it) to Unit } }
                     ),
                     persistentMapOf(
                         type to "Button",
                         "text" to "Remove all",
-                        "onClickListener" to { dispatch { WeatherDomain.removeAllTodos(it) to Unit } }
+                        "onClickListener" to λ { dispatch { WeatherDomain.removeAllTodos(it) to Unit } }
                     )
                 )
             ),
