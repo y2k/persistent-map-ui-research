@@ -11,10 +11,10 @@ data class Item(val name: String)
 
 fun Stateful<State>.view() = run {
     fun h1(text: String, vararg extra: Pair<String, Any>) =
-        persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text).putAll(extra)
+        persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text) + extra
 
     fun itemView(user: Item) =
-        h1("Item (${user.name})", "textSize" to 16f)
+        h1("'${user.name}'", "textSize" to 16f)
 
     persistentMapOf(
         type to "LinearLayout",
@@ -23,7 +23,7 @@ fun Stateful<State>.view() = run {
             persistentMapOf(
                 type to "EditTextWrapper",
                 "text" to state.text,
-                "onEditListener" to λ<String> { dispatch { db -> WeatherDomain.updateText(db, it) to Unit } },
+                "onTextListener" to λ<String> { dispatch { db -> WeatherDomain.updateText(db, it) to Unit } },
                 children to persistentListOf(
                     persistentMapOf(
                         type to "EditText",

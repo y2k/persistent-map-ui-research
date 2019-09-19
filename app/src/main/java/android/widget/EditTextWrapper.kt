@@ -45,7 +45,7 @@ class EditTextWrapper @JvmOverloads constructor(
         editText.addTextChangedListener(textWatcher)
     }
 
-    fun setOnEditListener(listener: (String) -> Unit) {
+    fun setOnTextListener(listener: (String) -> Unit) {
         this.listener = listener
     }
 }
