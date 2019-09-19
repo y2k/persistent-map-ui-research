@@ -18,3 +18,6 @@ class Statefull<State>(var state: State) {
         return r
     }
 }
+
+const val type = "@"
+const val children = "children"

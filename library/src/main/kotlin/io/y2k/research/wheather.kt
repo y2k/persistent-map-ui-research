@@ -17,6 +17,11 @@ import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
 data class WeatherState(val temperature: String = "", val error: String = "")
+@Serializable
+class WeatherResponse(val main: Main) {
+    @Serializable
+    class Main(val temp: Double)
+}
 
 fun Statefull<WeatherState>.weatherView() =
     persistentMapOf(
@@ -44,8 +49,8 @@ fun Statefull<WeatherState>.weatherView() =
 
 fun Statefull<WeatherState>.reloadWeather() {
     GlobalScope.launch {
-        dispatch(::preload)
-            .let { runCatching { loadWeatherFromWeb<WeatherResponse>(it) } }
+        dispatch { db -> preload(db) }
+            .let { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(it) } }
             .let { dispatch { db -> update(db, it) to Unit } }
     }
 }
@@ -61,29 +66,22 @@ private fun preload(db: WeatherState): Pair<WeatherState, HttpRequestBuilder> {
 }
 
 private fun update(db: WeatherState, response: Result<WeatherResponse>) = run {
-    fun mapToTemperature(response: WeatherResponse) =
-        response.main.temp
+    fun mapToTemperature(response: WeatherResponse) = response.main.temp
 
     response.fold(
-        { db.copy(error = "", temperature = "${mapToTemperature(it)} C") },
-        { db.copy(error = "Error", temperature = "--") }
+        { db.copy(temperature = "${mapToTemperature(it)} C", error = "") },
+        { db.copy(temperature = "--", error = "Error") }
     )
 }
 
-suspend inline fun <reified T> loadWeatherFromWeb(r: HttpRequestBuilder): T {
-    val client = HttpClient(AndroidClientEngine(AndroidEngineConfig())) {
-        install(JsonFeature) { serializer = KotlinxSerializer(Json.nonstrict) }
-    }
-    r.url.parameters.append("appid", WeatherConfig.apiKey)
-    return client.get(r)
-}
-
-@Serializable
-class WeatherResponse(val main: Main) {
-    @Serializable
-    class Main(val temp: Double)
-}
-
-object WeatherConfig {
+object Effects {
     lateinit var apiKey: String
+
+    suspend inline fun <reified T> loadWeatherFromWeb(request: HttpRequestBuilder): T {
+        val client = HttpClient(AndroidClientEngine(AndroidEngineConfig())) {
+            install(JsonFeature) { serializer = KotlinxSerializer(Json.nonstrict) }
+        }
+        request.url.parameters.append("appid", Effects.apiKey)
+        return client.get(request)
+    }
 }

@@ -40,8 +40,9 @@ object Interpreter {
                 .find { it.name == setterName && it.parameterTypes.size == 1 }
                 ?: error("view=${view::class.java.simpleName}, method=$setterName, type=${value::class.java.simpleName}")
             val listener =
-                Proxy.newProxyInstance(view::class.java.classLoader, arrayOf(setter.parameterTypes[0])) { _, _, _ ->
-                    (value as () -> Unit).invoke()
+                Proxy.newProxyInstance(view::class.java.classLoader, arrayOf(setter.parameterTypes[0])) { _, _, args ->
+                    (value as? () -> Unit)?.invoke()
+                    (value as? (Any?) -> Unit)?.invoke(args[0])
                 }
             setter(view, listener)
         } else {
