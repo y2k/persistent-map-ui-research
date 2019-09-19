@@ -1,15 +1,18 @@
 package io.y2k.research
 
+import io.y2k.research.common.Statefull
+import io.y2k.research.common.children
+import io.y2k.research.common.type
 import kotlinx.collections.immutable.*
 
 data class State(val text: String = "", val todos: PersistentList<Item> = persistentListOf())
 data class Item(val name: String)
 
 fun Statefull<State>.view() = run {
-    fun h1(title: String, vararg extra: Pair<String, Any>) =
-        persistentMapOf(type to "TextView", "textSize" to 18f, "text" to title).putAll(extra)
+    fun h1(text: String, vararg extra: Pair<String, Any>) =
+        persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text).putAll(extra)
 
-    fun toChildView(user: Item) =
+    fun itemView(user: Item) =
         h1("Item (${user.name})", "textSize" to 16f)
 
     persistentMapOf(
@@ -19,7 +22,7 @@ fun Statefull<State>.view() = run {
             persistentMapOf(
                 type to "EditTextWrapper",
                 "text" to state.text,
-                "onEditListener" to { x: String -> dispatch { db -> updateText(db, x) to Unit } },
+                "onEditListener" to { x: String -> dispatch { db -> WeatherDomain.updateText(db, x) to Unit } },
                 children to persistentListOf(
                     persistentMapOf(
                         type to "EditText",
@@ -34,12 +37,12 @@ fun Statefull<State>.view() = run {
                     persistentMapOf(
                         type to "Button",
                         "text" to "Add",
-                        "onClickListener" to { dispatch { addTodo(it) to Unit } }
+                        "onClickListener" to { dispatch { WeatherDomain.addTodo(it) to Unit } }
                     ),
                     persistentMapOf(
                         type to "Button",
                         "text" to "Remove all",
-                        "onClickListener" to { dispatch { removeAllTodos(it) to Unit } }
+                        "onClickListener" to { dispatch { WeatherDomain.removeAllTodos(it) to Unit } }
                     )
                 )
             ),
@@ -47,12 +50,14 @@ fun Statefull<State>.view() = run {
             persistentMapOf(
                 type to "LinearLayout",
                 "orientation" to 1,
-                children to state.todos.map { toChildView(it) }.toPersistentList()
+                children to state.todos.map { itemView(it) }.toPersistentList()
             )
         )
     )
 }
 
-fun updateText(db: State, x: String) = db.copy(text = x)
-fun removeAllTodos(db: State) = db.copy(todos = persistentListOf())
-fun addTodo(db: State) = db.copy(text = "", todos = db.todos + Item(db.text))
+object WeatherDomain {
+    fun updateText(db: State, text: String) = db.copy(text = text)
+    fun removeAllTodos(db: State) = db.copy(todos = persistentListOf())
+    fun addTodo(db: State) = db.copy(text = "", todos = db.todos + Item(db.text))
+}

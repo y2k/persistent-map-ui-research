@@ -3,16 +3,17 @@ package io.y2k.perstentmapuiresearch
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
-import io.y2k.research.children
-import io.y2k.research.type
+import io.y2k.research.common.children
+import io.y2k.research.common.type
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
 import java.lang.reflect.Proxy
 
 @Suppress("UNCHECKED_CAST")
-object Interpreter {
+object ViewFactory {
 
-    fun convert(context: Context, map: PersistentMap<String, Any>): View {
+    fun makeView(context: Context, map: PersistentMap<String, Any>): View {
+        println("LOGX :: Make view ${map[type]}")
         val viewTypeName = map[type] as String
         val view = makeView(context, viewTypeName)
 
@@ -33,7 +34,8 @@ object Interpreter {
         return cls.constructors.first { it.parameterTypes.size == 1 }.newInstance(context) as View
     }
 
-    private fun setProperty(view: View, key: String, value: Any) {
+    fun setProperty(view: View, key: String, value: Any) {
+        println("LOGX :: Set property view ${view::class.java.simpleName}.$key = $value")
         val setterName = makeSetterName(key)
         if (setterName.endsWith("Listener")) {
             val setter = view::class.java.methods
@@ -72,7 +74,7 @@ object Interpreter {
 
     private fun addChildren(viewGroup: ViewGroup, persistentList: PersistentList<PersistentMap<String, Any>>) {
         persistentList
-            .map { convert(viewGroup.context, it) }
+            .map { makeView(viewGroup.context, it) }
             .forEach { viewGroup.addView(it) }
     }
 }

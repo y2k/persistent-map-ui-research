@@ -6,6 +6,7 @@ import android.text.TextWatcher
 import android.util.AttributeSet
 import android.view.View
 import android.view.ViewGroup
+import kotlin.math.min
 
 @Suppress("unused")
 class EditTextWrapper @JvmOverloads constructor(
@@ -36,8 +37,11 @@ class EditTextWrapper @JvmOverloads constructor(
             initText = text
             return
         }
+        if (text.contentEquals(editText.text)) return
         editText.removeTextChangedListener(textWatcher)
+        val pos = editText.selectionStart
         editText.setText(text)
+        editText.setSelection(min(text.length, pos))
         editText.addTextChangedListener(textWatcher)
     }
 

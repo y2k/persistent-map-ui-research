@@ -1,4 +1,4 @@
-package io.y2k.research
+package io.y2k.research.common
 
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
