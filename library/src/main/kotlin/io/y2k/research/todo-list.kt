@@ -28,28 +28,32 @@ fun Stateful<State>.view() = run {
                     )
                 )
             ),
-            persistentMapOf(
-                type to "LinearLayout",
-                "gravity" to 5,
-                children to persistentListOf(
-                    persistentMapOf(
-                        type to "Button",
-                        "text" to "Add",
-                        "onClickListener" to λ { update(WeatherDomain::addTodo) }
-                    ),
-                    persistentMapOf(
-                        type to "Button",
-                        "text" to "Remove all",
-                        "onClickListener" to λ { update(WeatherDomain::removeAllTodos) }
+            const {
+                persistentMapOf(
+                    type to "LinearLayout",
+                    "gravity" to 5,
+                    children to persistentListOf(
+                        persistentMapOf(
+                            type to "Button",
+                            "text" to "Add",
+                            "onClickListener" to λ { update(WeatherDomain::addTodo) }
+                        ),
+                        persistentMapOf(
+                            type to "Button",
+                            "text" to "Remove all",
+                            "onClickListener" to λ { update(WeatherDomain::removeAllTodos) }
+                        )
                     )
                 )
-            ),
+            },
             h1("Todo Items:", "gravity" to 1),
-            persistentMapOf(
-                type to "LinearLayout",
-                "orientation" to 1,
-                children to state.todos.map { itemView(it) }.toPersistentList()
-            )
+            memo(state.todos) { todos ->
+                persistentMapOf(
+                    type to "LinearLayout",
+                    "orientation" to 1,
+                    children to todos.map { itemView(it) }.toPersistentList()
+                )
+            }
         )
     )
 }

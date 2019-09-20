@@ -2,6 +2,8 @@
 
 package io.y2k.research.common
 
+import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 
@@ -25,7 +27,8 @@ inline fun <State> Stateful<State>.update(crossinline f: (State) -> State) =
     dispatch { f(it) to Unit }
 
 const val type = "@"
-const val children = "children"
+const val children = "@children"
+const val memo = "@memo"
 
 class λ<T>(val f: (T) -> Unit) {
 
@@ -43,3 +46,14 @@ class λ<T>(val f: (T) -> Unit) {
 }
 
 inline fun λ(crossinline f: () -> Unit) = λ<Any> { f() }
+
+inline fun <T : Any> memo(value: T, crossinline f: (T) -> PersistentMap<String, Any>): PersistentMap<String, Any> =
+    persistentMapOf(memo to value, "@fabric" to MemoViewFactory { f(value) }, type to "MemoViewGroup")
+
+inline fun const(crossinline f: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
+    memo(Unit) { f() }
+
+class MemoViewFactory(val f: () -> PersistentMap<String, Any>) {
+    override fun hashCode(): Int = 0
+    override fun equals(other: Any?): Boolean = true
+}
