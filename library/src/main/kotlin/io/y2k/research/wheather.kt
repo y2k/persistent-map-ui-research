@@ -25,10 +25,7 @@ class WeatherResponse(val main: Main) {
 }
 
 fun Stateful<WeatherState>.view() =
-    persistentMapOf(
-        type to "LinearLayout",
-        "orientation" to 1,
-        "backgroundColor" to Colors.background,
+    column(
         children to persistentListOf(
             persistentMapOf(
                 type to "TextView",

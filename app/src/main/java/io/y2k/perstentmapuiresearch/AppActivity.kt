@@ -3,8 +3,9 @@ package io.y2k.perstentmapuiresearch
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import io.y2k.research.*
+import io.y2k.research.AppState
 import io.y2k.research.common.StatefulWrapper
+import io.y2k.research.view
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
@@ -21,14 +22,7 @@ class AppActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val state = StatefulWrapper(
-            AppState(
-                0,
-                listOf("Weather", "Todo", "About"),
-                WeatherState(),
-                TodoState(todos = persistentListOf(Item("One"), Item("Two"), Item("Three")))
-            )
-        )
+        val state = StatefulWrapper(AppState())
         launch {
             val listener = state.makeListener()
             while (true) {

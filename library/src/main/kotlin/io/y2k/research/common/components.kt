@@ -1,10 +1,12 @@
 package io.y2k.research.common
 
 import kotlinx.collections.immutable.PersistentMap
+import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.plus
 
 object Colors {
+    const val white = 0xffffffff.toInt()
     const val background = 0xfffafafa.toInt()
 }
 
@@ -37,3 +39,30 @@ fun column(vararg items: Pair<String, Any>) =
         type to "LinearLayout",
         "orientation" to 1
     ).plus(items.asIterable())
+
+inline fun padding(padding: String, child: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
+    persistentMapOf(
+        type to "PaddingView",
+        "padding" to padding,
+        children to persistentListOf(child())
+    )
+
+fun h1(text: String, vararg extra: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 48f, "text" to text) + extra
+
+fun h2(text: String, vararg extra: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 22f, "text" to text) + extra
+
+fun h3(text: String, vararg extra: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text) + extra
+
+fun roundButton(text: String): PersistentMap<String, Any> {
+    return persistentMapOf(
+        type to "Button",
+        "backgroundResource" to ResConst.button_background_round,
+        "text" to text,
+        "textSize" to 50f,
+        "gravity" to 17,
+        "textColor" to Colors.white
+    )
+}

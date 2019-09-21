@@ -6,22 +6,25 @@ import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 data class AppState(
-    val page: Int,
-    val pages: List<String>,
-    val weather: WeatherState,
-    val todo: TodoState
+    val page: Int = 0,
+    val pages: List<String> = listOf("Weather", "Todo"),
+    val weather: WeatherState = WeatherState(),
+    val todo: TodoState = TodoState(todos = persistentListOf(Item("One"), Item("Two"), Item("Three")))
 )
 
 fun Stateful<AppState>.view() =
     column(
         "backgroundColor" to Colors.background,
         children to persistentListOf(
-            row(children to tabsViews()),
             persistentMapOf(
-                type to "PaddingView",
-                "padding" to "16,16,16,16",
-                children to persistentListOf(content())
-            )
+                type to "Expanded",
+                children to persistentListOf(
+                    padding("16,16,16,16") {
+                        content()
+                    }
+                )
+            ),
+            row(children to tabsViews())
         )
     )
 

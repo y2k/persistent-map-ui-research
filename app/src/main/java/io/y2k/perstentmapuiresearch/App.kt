@@ -11,5 +11,6 @@ class App : Application() {
         ResConst.density = resources.displayMetrics.density
         ResConst.button_background = R.drawable.button_background
         ResConst.button_background_white = R.drawable.button_background_white
+        ResConst.button_background_round = R.drawable.button_background_round
     }
 }

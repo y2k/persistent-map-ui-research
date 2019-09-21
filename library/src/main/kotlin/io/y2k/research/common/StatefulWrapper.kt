@@ -81,5 +81,5 @@ object ResConst {
     var density: Float = 0f
     var button_background: Int = 0
     var button_background_white: Int = 0
+    var button_background_round: Int = 0
 }
-

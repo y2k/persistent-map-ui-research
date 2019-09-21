@@ -7,17 +7,11 @@ data class TodoState(val text: String = "", val todos: PersistentList<Item> = pe
 data class Item(val text: String)
 
 fun Stateful<TodoState>.view() = run {
-    fun h1(text: String, vararg extra: Pair<String, Any>) =
-        persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text) + extra
 
     fun itemView(item: Item) =
-        persistentMapOf(
-            type to "PaddingView",
-            "padding" to "0,8,0,8",
-            children to persistentListOf(
-                h1(item.text, "textSize" to 22f)
-            )
-        )
+        padding("0,8,0,8") {
+            h2(item.text)
+        }
 
     column(
         "backgroundColor" to Colors.background,
@@ -37,30 +31,32 @@ fun Stateful<TodoState>.view() = run {
                 row(
                     "gravity" to 5,
                     children to persistentListOf(
-                        button("Add", λ { update(WeatherDomain::addTodo) }),
-                        persistentMapOf(type to "FrameLayout", "minimumWidth" to (8 * ResConst.density).toInt()),
-                        whiteButton("Remove all", λ { update(WeatherDomain::removeAllTodos) })
+                        padding("4,4,4,4") {
+                            button("+ Add Now", λ { update(WeatherDomain::addTodo) })
+                        },
+                        padding("4,4,4,4") {
+                            whiteButton("Remove all", λ { update(WeatherDomain::removeAllTodos) })
+                        }
                     )
                 )
             },
-            persistentMapOf(
-                type to "PaddingView",
-                "padding" to "8,8,8,8",
-                children to persistentListOf(
-                    h1(
-                        "Today",
-                        "textSize" to 48f,
-                        "gravity" to 1
-                    )
-                )
-            ),
+            padding("8,8,8,8") {
+                h1("Today", "gravity" to 1)
+            },
             memo(state.todos) { todos ->
                 persistentMapOf(
                     type to "LinearLayout",
                     "orientation" to 1,
                     children to todos.map { itemView(it) }.toPersistentList()
                 )
-            }
+            },
+            row(
+                "gravity" to 1,
+                children to persistentListOf(
+                    roundButton("+")
+                )
+            )
+
         )
     )
 }
