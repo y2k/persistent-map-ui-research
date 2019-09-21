@@ -14,7 +14,6 @@ fun Stateful<TodoState>.view() = run {
         }
 
     column(
-        "backgroundColor" to Colors.background,
         children to persistentListOf(
             persistentMapOf(
                 type to "EditTextWrapper",
@@ -43,12 +42,14 @@ fun Stateful<TodoState>.view() = run {
             padding("8,8,8,8") {
                 h1("Today", "gravity" to 1)
             },
-            memo(state.todos) { todos ->
-                persistentMapOf(
-                    type to "LinearLayout",
-                    "orientation" to 1,
-                    children to todos.map { itemView(it) }.toPersistentList()
-                )
+            expanded {
+                memo(state.todos) { todos ->
+                    persistentMapOf(
+                        type to "LinearLayout",
+                        "orientation" to 1,
+                        children to todos.map { itemView(it) }.toPersistentList()
+                    )
+                }
             },
             row(
                 "gravity" to 1,

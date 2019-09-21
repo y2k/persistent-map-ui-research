@@ -3,6 +3,7 @@ package io.y2k.perstentmapuiresearch
 import android.content.Context
 import android.view.View
 import android.view.ViewGroup
+import android.widget.TextView
 import io.y2k.research.common.*
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.PersistentMap
@@ -16,6 +17,8 @@ object ViewFactory {
         println("LOGX :: Make view ${map[type]}")
         val viewTypeName = map[type] as String
         val view = makeView(context, viewTypeName)
+
+        view.setPadding(0, 0, 0, 0)
 
         map.forEach { (key, value) ->
             if (key != type && key != children && key != memo && key != "@fabric")

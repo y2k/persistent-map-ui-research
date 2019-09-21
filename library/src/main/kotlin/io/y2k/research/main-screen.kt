@@ -16,14 +16,11 @@ fun Stateful<AppState>.view() =
     column(
         "backgroundColor" to Colors.background,
         children to persistentListOf(
-            persistentMapOf(
-                type to "Expanded",
-                children to persistentListOf(
-                    padding("16,16,16,16") {
-                        content()
-                    }
-                )
-            ),
+            expanded {
+                padding("16,16,16,16") {
+                    content()
+                }
+            },
             row(children to tabsViews())
         )
     )

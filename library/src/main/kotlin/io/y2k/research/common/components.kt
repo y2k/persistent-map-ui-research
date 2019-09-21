@@ -56,13 +56,24 @@ fun h2(text: String, vararg extra: Pair<String, Any>) =
 fun h3(text: String, vararg extra: Pair<String, Any>) =
     persistentMapOf(type to "TextView", "textSize" to 18f, "text" to text) + extra
 
-fun roundButton(text: String): PersistentMap<String, Any> {
-    return persistentMapOf(
+fun roundButton(text: String): PersistentMap<String, Any> =
+    persistentMapOf(
         type to "Button",
         "backgroundResource" to ResConst.button_background_round,
         "text" to text,
         "textSize" to 50f,
         "gravity" to 17,
+        "minimumWidth" to 0,
+        "minWidth" to 0,
+        "minimumHeight" to 0,
+        "minHeight" to 0,
         "textColor" to Colors.white
     )
-}
+
+inline fun expanded(content: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
+    persistentMapOf(
+        type to "Expanded",
+        children to persistentListOf(
+            content()
+        )
+    )
