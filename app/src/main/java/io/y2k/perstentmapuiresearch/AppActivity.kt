@@ -3,17 +3,15 @@ package io.y2k.perstentmapuiresearch
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import io.y2k.research.Effects
-import io.y2k.research.WeatherState
+import io.y2k.research.*
 import io.y2k.research.common.StatefulWrapper
-import io.y2k.research.view
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
 
-class WeatherActivity : AppCompatActivity(), CoroutineScope by MainScope() {
+class AppActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
     private val root by lazy { FrameLayout(this) }
     private var prevState = persistentListOf<PersistentMap<String, Any>>()
@@ -21,10 +19,16 @@ class WeatherActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
-        Effects.apiKey = BuildConfig.WEATHER_API
         setContentView(root)
 
-        val state = StatefulWrapper(WeatherState())
+        val state = StatefulWrapper(
+            AppState(
+                0,
+                listOf("Weather", "Todo", "About"),
+                WeatherState(),
+                TodoState(todos = persistentListOf(Item("One"), Item("Two"), Item("Three")))
+            )
+        )
         launch {
             val listener = state.makeListener()
             while (true) {

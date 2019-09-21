@@ -5,8 +5,11 @@
     <uses-permission android:name="android.permission.INTERNET" />
 
     <application
-            android:theme="@style/Theme.AppCompat.Light"
+            android:name=".App"
+            android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:label="Persistent Map UI">
+        <activity android:name=".AppActivity"
+                  android:exported="true"/>
         <activity android:name=".MainActivity"
                   android:exported="true"/>
         <activity android:name=".WeatherActivity"

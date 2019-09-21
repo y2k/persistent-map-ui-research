@@ -9,10 +9,7 @@ import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.request
 import io.ktor.client.request.url
-import io.y2k.research.common.Stateful
-import io.y2k.research.common.children
-import io.y2k.research.common.type
-import io.y2k.research.common.λ
+import io.y2k.research.common.*
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.GlobalScope
@@ -27,11 +24,11 @@ class WeatherResponse(val main: Main) {
     class Main(val temp: Double)
 }
 
-fun Stateful<WeatherState>.weatherView() =
+fun Stateful<WeatherState>.view() =
     persistentMapOf(
         type to "LinearLayout",
         "orientation" to 1,
-        "gravity" to 16,
+        "backgroundColor" to Colors.background,
         children to persistentListOf(
             persistentMapOf(
                 type to "TextView",
@@ -43,11 +40,7 @@ fun Stateful<WeatherState>.weatherView() =
                 type to "TextView",
                 "text" to state.error
             ),
-            persistentMapOf(
-                type to "Button",
-                "text" to "Reload",
-                "onClickListener" to λ(::reloadWeather)
-            )
+            button("Reload", λ(::reloadWeather))
         )
     )
 
@@ -75,7 +68,7 @@ object TodoListDomain {
 
         response.fold(
             { db.copy(temperature = "${mapToTemperature(it)} C", error = "") },
-            { db.copy(temperature = "--", error = "Error") }
+            { db.copy(temperature = "--", error = "Error: ${it.message}") }
         )
     }
 }
