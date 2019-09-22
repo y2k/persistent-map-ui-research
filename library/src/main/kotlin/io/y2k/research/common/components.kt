@@ -24,7 +24,7 @@ fun button(text: String, onClick: λ<*>): PersistentMap<String, Any> =
     persistentMapOf(
         type to "Button",
         "backgroundResource" to Resources.button_background,
-        "textColor" to 0xFFFFFFFF.toInt(),
+        "textColor" to Colors.white,
         "text" to text,
         "onClickListener" to onClick
     )
@@ -86,19 +86,15 @@ fun roundButton(text: String): PersistentMap<String, Any> =
         "textColor" to Colors.white
     )
 
-fun editor(text: String, λ: λ<String>, vararg extra: Pair<String, Any>): PersistentMap<String, Any> {
-    return persistentMapOf(
+fun editor(text: String, f: λ<String>, vararg extra: Pair<String, Any>): PersistentMap<String, Any> =
+    persistentMapOf(
         type to "EditTextWrapper",
         "text" to text,
-        "onTextListener" to λ,
+        "onTextListener" to f,
         children to persistentListOf(
-            persistentMapOf(
-                type to "EditText",
-                "hint" to "New todo item"
-            ).putAll(extra)
+            persistentMapOf(type to "EditText").putAll(extra)
         )
     )
-}
 
 inline fun expanded(content: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(

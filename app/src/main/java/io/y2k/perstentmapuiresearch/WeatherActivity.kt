@@ -24,7 +24,7 @@ class WeatherActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         Effects.apiKey = BuildConfig.WEATHER_API
         setContentView(root)
 
-        val state = StatefulWrapper(WeatherState())
+        val state = StatefulWrapper(WeatherState(), this)
         launch {
             val listener = state.makeListener()
             while (true) {

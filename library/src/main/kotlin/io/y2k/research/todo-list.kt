@@ -4,6 +4,10 @@ import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.END
 import io.y2k.research.common.Gravity.NO_GRAVITY
+import io.y2k.research.common.Localization.Today
+import io.y2k.research.common.Localization.Add_Now
+import io.y2k.research.common.Localization.New_todo_item
+import io.y2k.research.common.Localization.Remove_all
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.plus
@@ -25,23 +29,23 @@ fun Stateful<TodoState>.view() = run {
             editor(
                 state.text,
                 λ<String> { update { db -> WeatherDomain.updateText(db, it) } },
-                "hint" to "New todo item"
+                "hint" to New_todo_item.i18n
             ),
             freeze {
                 row(
                     "gravity" to END,
                     children to persistentListOf(
                         padding(4) {
-                            button("+ Add Now", λ { update(WeatherDomain::addTodo) })
+                            button(Add_Now.i18n, λ { update(WeatherDomain::addTodo) })
                         },
                         padding(4) {
-                            whiteButton("Remove all", λ { update(WeatherDomain::removeAllTodos) })
+                            whiteButton(Remove_all.i18n, λ { update(WeatherDomain::removeAllTodos) })
                         }
                     )
                 )
             },
             padding(8) {
-                h1("Today", "gravity" to CENTER_H)
+                h1(Today.i18n, "gravity" to CENTER_H)
             },
             expanded {
                 memo(state.todos) { todos ->
@@ -56,7 +60,6 @@ fun Stateful<TodoState>.view() = run {
                     roundButton("+")
                 )
             )
-
         )
     )
 }

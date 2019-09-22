@@ -12,8 +12,8 @@ import io.ktor.client.request.url
 import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.CENTER_V
+import io.y2k.research.common.Localization.Reload_Weather
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
@@ -34,20 +34,20 @@ fun Stateful<WeatherState>.view() =
                 "gravity" to CENTER_H
             ),
             h4(state.error),
-            button("Reload Weather", λ(::reloadWeather))
+            button(Reload_Weather.i18n, λ(::reloadWeather))
         )
     )
 
 fun Stateful<WeatherState>.reloadWeather() {
-    GlobalScope.launch {
-        dispatch { db -> TodoListDomain.preload(db) }
+    launch {
+        dispatch { db -> TodoListDomain.mkRequest(db) }
             .let { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(it) } }
-            .let { dispatch { db -> TodoListDomain.update(db, it) to Unit } }
+            .let { update { db -> TodoListDomain.update(db, it) } }
     }
 }
 
 object TodoListDomain {
-    fun preload(db: WeatherState): Pair<WeatherState, HttpRequestBuilder> {
+    fun mkRequest(db: WeatherState): Pair<WeatherState, HttpRequestBuilder> {
         fun mkRequest() =
             request {
                 val city = "Saint+Petersburg"
