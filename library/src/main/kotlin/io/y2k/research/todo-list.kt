@@ -1,7 +1,13 @@
 package io.y2k.research
 
 import io.y2k.research.common.*
-import kotlinx.collections.immutable.*
+import io.y2k.research.common.Gravity.CENTER_H
+import io.y2k.research.common.Gravity.END
+import io.y2k.research.common.Gravity.NO_GRAVITY
+import kotlinx.collections.immutable.PersistentList
+import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.plus
+import kotlinx.collections.immutable.toPersistentList
 
 data class TodoState(val text: String = "", val todos: PersistentList<Item> = persistentListOf())
 data class Item(val text: String)
@@ -10,49 +16,42 @@ fun Stateful<TodoState>.view() = run {
 
     fun itemView(item: Item) =
         padding("0,8,0,8") {
-            h2(item.text)
+            h3(item.text)
         }
 
     column(
+        "gravity" to NO_GRAVITY,
         children to persistentListOf(
-            persistentMapOf(
-                type to "EditTextWrapper",
-                "text" to state.text,
-                "onTextListener" to λ<String> { update { db -> WeatherDomain.updateText(db, it) } },
-                children to persistentListOf(
-                    persistentMapOf(
-                        type to "EditText",
-                        "hint" to "New todo item"
-                    )
-                )
+            editor(
+                state.text,
+                λ<String> { update { db -> WeatherDomain.updateText(db, it) } },
+                "hint" to "New todo item"
             ),
-            const {
+            freeze {
                 row(
-                    "gravity" to 5,
+                    "gravity" to END,
                     children to persistentListOf(
-                        padding("4,4,4,4") {
+                        padding(4) {
                             button("+ Add Now", λ { update(WeatherDomain::addTodo) })
                         },
-                        padding("4,4,4,4") {
+                        padding(4) {
                             whiteButton("Remove all", λ { update(WeatherDomain::removeAllTodos) })
                         }
                     )
                 )
             },
-            padding("8,8,8,8") {
-                h1("Today", "gravity" to 1)
+            padding(8) {
+                h1("Today", "gravity" to CENTER_H)
             },
             expanded {
                 memo(state.todos) { todos ->
-                    persistentMapOf(
-                        type to "LinearLayout",
-                        "orientation" to 1,
+                    column(
                         children to todos.map { itemView(it) }.toPersistentList()
                     )
                 }
             },
             row(
-                "gravity" to 1,
+                "gravity" to CENTER_H,
                 children to persistentListOf(
                     roundButton("+")
                 )

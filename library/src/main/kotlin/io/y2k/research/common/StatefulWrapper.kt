@@ -69,7 +69,7 @@ inline fun λ(crossinline f: () -> Unit) = λ<Any> { f() }
 inline fun <T : Any> memo(value: T, crossinline f: (T) -> PersistentMap<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(memo to value, "@fabric" to MemoViewFactory { f(value) }, type to "MemoViewGroup")
 
-inline fun const(crossinline f: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
+inline fun freeze(crossinline f: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
     memo(Unit) { f() }
 
 class MemoViewFactory(val f: () -> PersistentMap<String, Any>) {
@@ -77,7 +77,7 @@ class MemoViewFactory(val f: () -> PersistentMap<String, Any>) {
     override fun equals(other: Any?): Boolean = true
 }
 
-object ResConst {
+object Resources {
     var density: Float = 0f
     var button_background: Int = 0
     var button_background_white: Int = 0

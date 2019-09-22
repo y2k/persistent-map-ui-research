@@ -19,6 +19,7 @@ object ViewFactory {
         val view = makeView(context, viewTypeName)
 
         view.setPadding(0, 0, 0, 0)
+        (view as? TextView)?.includeFontPadding = false
 
         map.forEach { (key, value) ->
             if (key != type && key != children && key != memo && key != "@fabric")

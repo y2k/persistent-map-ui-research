@@ -2,7 +2,6 @@ package io.y2k.research
 
 import io.y2k.research.common.*
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.collections.immutable.toPersistentList
 
 data class AppState(
@@ -37,10 +36,8 @@ private fun Stateful<AppState>.tabsViews() =
             val button =
                 if (i == state.page) button(x, λ { update { db -> db.copy(page = i) } })
                 else whiteButton(x, λ { update { db -> db.copy(page = i) } })
-            persistentMapOf(
-                type to "PaddingView",
-                "padding" to "4,4,4,4",
-                children to persistentListOf(button)
-            )
+            padding("4,4,4,4") {
+                button
+            }
         }
         .toPersistentList()

@@ -10,8 +10,9 @@ import io.ktor.client.request.get
 import io.ktor.client.request.request
 import io.ktor.client.request.url
 import io.y2k.research.common.*
+import io.y2k.research.common.Gravity.CENTER_H
+import io.y2k.research.common.Gravity.CENTER_V
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.GlobalScope
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -26,18 +27,14 @@ class WeatherResponse(val main: Main) {
 
 fun Stateful<WeatherState>.view() =
     column(
+        "gravity" to CENTER_V,
         children to persistentListOf(
-            persistentMapOf(
-                type to "TextView",
-                "textSize" to 36f,
-                "gravity" to 1,
-                "text" to state.temperature
+            h2(
+                state.temperature,
+                "gravity" to CENTER_H
             ),
-            persistentMapOf(
-                type to "TextView",
-                "text" to state.error
-            ),
-            button("Reload", λ(::reloadWeather))
+            h4(state.error),
+            button("Reload Weather", λ(::reloadWeather))
         )
     )
 
