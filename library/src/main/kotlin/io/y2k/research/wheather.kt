@@ -12,6 +12,7 @@ import io.ktor.client.request.url
 import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.CENTER_V
+import io.y2k.research.common.Localization.Reload_Weather
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
@@ -33,7 +34,7 @@ fun Stateful<WeatherState>.view() =
                 "gravity" to CENTER_H
             ),
             h4(state.error),
-            button("Reload Weather", λ(::reloadWeather))
+            button(Reload_Weather.i18n, λ(::reloadWeather))
         )
     )
 
