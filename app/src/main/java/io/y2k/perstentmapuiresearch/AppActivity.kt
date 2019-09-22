@@ -22,7 +22,7 @@ class AppActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val state = StatefulWrapper(AppState())
+        val state = StatefulWrapper(AppState(), this)
         launch {
             val listener = state.makeListener()
             while (true) {

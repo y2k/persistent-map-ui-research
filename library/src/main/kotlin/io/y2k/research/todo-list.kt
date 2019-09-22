@@ -56,7 +56,6 @@ fun Stateful<TodoState>.view() = run {
                     roundButton("+")
                 )
             )
-
         )
     )
 }

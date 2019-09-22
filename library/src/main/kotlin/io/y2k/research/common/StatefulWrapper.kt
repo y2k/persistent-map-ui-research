@@ -4,16 +4,19 @@ package io.y2k.research.common
 
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 
-interface Stateful<State> {
+interface Stateful<State> : CoroutineScope {
     val state: State
     fun <T> dispatch(f: (State) -> Pair<State, T>): T
 }
 
 @Suppress("EXPERIMENTAL_API_USAGE")
-class StatefulWrapper<State>(override var state: State) : Stateful<State> {
+class StatefulWrapper<State>(
+    override var state: State, scope: CoroutineScope
+) : Stateful<State>, CoroutineScope by scope {
 
     private val channel =
         BroadcastChannel<Unit>(Channel.CONFLATED)
@@ -33,7 +36,7 @@ inline fun <State> Stateful<State>.update(crossinline f: (State) -> State) =
 
 fun <T, R> Stateful<T>.map(g: (T) -> R, f2: (T, R) -> T): Stateful<R> = run {
     val this_ = this
-    object : Stateful<R> {
+    object : Stateful<R>, CoroutineScope by this_ {
         override val state: R
             get() = g(this_.state)
 

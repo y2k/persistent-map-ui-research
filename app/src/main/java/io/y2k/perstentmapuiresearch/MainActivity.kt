@@ -1,7 +1,6 @@
 package io.y2k.perstentmapuiresearch
 
 import android.os.Bundle
-import android.widget.Button
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
 import io.y2k.research.TodoState
@@ -23,7 +22,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val state = StatefulWrapper(TodoState())
+        val state = StatefulWrapper(TodoState(), this)
         launch {
             val listener = state.makeListener()
             while (true) {
