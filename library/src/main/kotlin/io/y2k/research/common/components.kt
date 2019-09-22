@@ -16,6 +16,7 @@ object Gravity {
 }
 
 object Colors {
+    const val red = 0xffff0000.toInt()
     const val white = 0xffffffff.toInt()
     const val background = 0xfffafafa.toInt()
 }

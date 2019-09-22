@@ -14,7 +14,6 @@ import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.CENTER_V
 import io.y2k.research.common.Localization.Reload_Weather
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.launch
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -29,41 +28,36 @@ fun Stateful<WeatherState>.view() =
     column(
         "gravity" to CENTER_V,
         children to persistentListOf(
-            h2(
+            h1(
                 state.temperature,
                 "gravity" to CENTER_H
             ),
-            h4(state.error),
-            button(Reload_Weather.i18n, λ(::reloadWeather))
+            padding(8) {
+                h4(state.error, "textColor" to Colors.red)
+            },
+            button(
+                Reload_Weather.i18n,
+                λ { effect(TodoListDomain::mkRequest).next(TodoListDomain::handleResponse) })
         )
     )
 
-fun Stateful<WeatherState>.reloadWeather() {
-    launch {
-        dispatch { db -> TodoListDomain.mkRequest(db) }
-            .let { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(it) } }
-            .let { update { db -> TodoListDomain.update(db, it) } }
-    }
-}
-
 object TodoListDomain {
-    fun mkRequest(db: WeatherState): Pair<WeatherState, HttpRequestBuilder> {
-        fun mkRequest() =
-            request {
-                val city = "Saint+Petersburg"
-                url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
-            }
 
-        return db.copy(temperature = "...", error = "") to mkRequest()
+    fun mkRequest(db: WeatherState) = run {
+        val r = request {
+            val city = "Saint+Petersburg"
+            url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
+        }
+        db.copy(temperature = "...", error = "") to
+                suspend { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(r) } }
     }
 
-    fun update(db: WeatherState, response: Result<WeatherResponse>) = run {
+    fun handleResponse(db: WeatherState, r: Result<WeatherResponse>) = run {
         fun mapToTemperature(response: WeatherResponse) = response.main.temp
-
-        response.fold(
+        r.fold(
             { db.copy(temperature = "${mapToTemperature(it)} C", error = "") },
             { db.copy(temperature = "--", error = "Error: ${it.message}") }
-        )
+        ) to None
     }
 }
 

@@ -5,6 +5,8 @@ package io.y2k.research.common
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
 import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.Deferred
+import kotlinx.coroutines.async
 import kotlinx.coroutines.channels.BroadcastChannel
 import kotlinx.coroutines.channels.Channel
 
@@ -85,4 +87,26 @@ object Resources {
     var button_background: Int = 0
     var button_background_white: Int = 0
     var button_background_round: Int = 0
+}
+
+fun <T, R> Stateful<T>.effect(f: (T) -> Pair<T, suspend () -> R>): Step<T, R> {
+    val y = async {
+        val s = dispatch { db -> f(db) }
+        val z = s()
+        z
+    }
+    return Step(y, this)
+}
+
+class Step<Db, T>(val t: Deferred<T>, val st: Stateful<Db>)
+
+val None = suspend { Unit }
+
+fun <Db, T, R> Step<Db, T>.next(f: (Db, T) -> Pair<Db, suspend () -> R>): Step<Db, R> {
+    val y = st.async {
+        val x = t.await()
+        val z = st.dispatch { db -> f(db, x) }
+        z()
+    }
+    return Step(y, st)
 }
