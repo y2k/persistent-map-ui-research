@@ -3,8 +3,8 @@ package io.y2k.perstentmapuiresearch
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import io.y2k.research.TodoState
-import io.y2k.research.common.StatefulWrapper
+import io.y2k.research.AppState
+import io.y2k.research.common.*
 import io.y2k.research.view
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
@@ -22,7 +22,20 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val state = StatefulWrapper(TodoState(), this)
+        val initState = NavState(listOf(Navigation.mkNavItem(AppState(), Stateful<AppState>::view)))
+        val state = StatefulWrapper(initState, this)
+
+        Navigation.shared = object : Navigation {
+            override suspend fun push(x: Pair<Any, Stateful<Any>.() -> View>): Unit =
+                state.update { db -> db.copy(childs = db.childs + x) }
+
+            override suspend fun pop(): Boolean =
+                state.dispatch { db ->
+                    if (db.childs.size == 1) db to false
+                    else db.copy(childs = db.childs.dropLast(1)) to true
+                }
+        }
+
         launch {
             val listener = state.makeListener()
             while (true) {
@@ -30,6 +43,10 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
                 listener.receive()
             }
         }
+    }
+
+    override fun onBackPressed() {
+        launch { if (!Navigation.shared.pop()) super.onBackPressed() }
     }
 
     private fun updateContentView(view: PersistentMap<String, Any>) {

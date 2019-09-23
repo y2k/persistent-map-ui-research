@@ -100,7 +100,7 @@ object Reconciliation {
     }
 
     private fun removeUnusedProps(unusedProps: Set<String>) {
-        if (unusedProps.isNotEmpty()) error("Unsupported: $unusedProps")
+        if (unusedProps.isNotEmpty()) Exception("Unsupported: $unusedProps").printStackTrace()
     }
 
     @Suppress("UNCHECKED_CAST")

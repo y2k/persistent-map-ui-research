@@ -7,7 +7,7 @@ object Localization {
     val Todo = "Todo" to "Todo"
     val Weather = "Weather" to "Погода"
     val Today = "Today" to "Сегодня"
-    val Remove_all = "Remove all" to "Удилить все"
+    val Remove_all = "Remove all" to "Удалить все"
     val Add_Now = "+ Add Now" to "+ Добавить"
     val New_todo_item = "New todo item" to "Новая запись"
     val Reload_Weather = "Reload Weather" to "Перегрузить погоду"

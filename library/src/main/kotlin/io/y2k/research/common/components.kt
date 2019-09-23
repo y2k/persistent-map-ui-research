@@ -73,7 +73,7 @@ fun h3(text: String, vararg extra: Pair<String, Any>) =
 fun h4(text: String, vararg extra: Pair<String, Any>) =
     persistentMapOf(type to "TextView", "text" to text) + extra
 
-fun roundButton(text: String): PersistentMap<String, Any> =
+fun roundButton(text: String, vararg extra: Pair<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(
         type to "Button",
         "backgroundResource" to Resources.button_background_round,
@@ -85,7 +85,7 @@ fun roundButton(text: String): PersistentMap<String, Any> =
         "minimumHeight" to 0,
         "minHeight" to 0,
         "textColor" to Colors.white
-    )
+    ).putAll(extra)
 
 fun editor(text: String, f: λ<String>, vararg extra: Pair<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(
