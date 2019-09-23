@@ -3,8 +3,6 @@ package io.y2k.research
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.android.AndroidClientEngine
 import io.ktor.client.engine.android.AndroidEngineConfig
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
 import io.ktor.client.request.HttpRequestBuilder
 import io.ktor.client.request.get
 import io.ktor.client.request.request
@@ -53,13 +51,13 @@ object TodoListDomain {
     fun mkRequest(db: WeatherState) = run {
         val r = request {
             val city = "Saint+Petersburg"
-            url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
+            url("https://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
         }
         db.copy(temperature = "...", error = "") to r
     }
 
     fun handleResponse(db: WeatherState, r: Result<String>) = run {
-        fun toTemp(json: String) = Json.parse(WeatherResponse.serializer(), json).main.temp
+        fun toTemp(json: String) = Json.nonstrict.parse(WeatherResponse.serializer(), json).main.temp
         r.fold(
             { db.copy(temperature = "${toTemp(it)} C", error = "") },
             { db.copy(temperature = "--", error = "Error: ${it.message}") }
@@ -70,10 +68,10 @@ object TodoListDomain {
 object Effects {
     lateinit var apiKey: String
 
-    fun loadWeatherFromWebAsync(a: CoroutineScope, request: HttpRequestBuilder) = a.run {
-        val client = HttpClient(AndroidClientEngine(AndroidEngineConfig())) {
-            this.install(JsonFeature) { this.serializer = KotlinxSerializer(Json.nonstrict) }
-        }
+    fun navigateAsync(a: CoroutineScope, x: NavItem<*>) = a.async { Navigation.shared.push(x) }
+
+    fun loadWeatherFromWebAsync(scope: CoroutineScope, request: HttpRequestBuilder) = with(scope) {
+        val client = HttpClient(AndroidClientEngine(AndroidEngineConfig()))
         request.url.parameters.append("appid", this@Effects.apiKey)
         async { client.get<String>(request) }
     }

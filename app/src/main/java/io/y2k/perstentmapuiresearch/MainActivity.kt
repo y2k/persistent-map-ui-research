@@ -22,17 +22,17 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         setContentView(root)
 
-        val initState = NavState(listOf(Navigation.mkNavItem(AppState(), Stateful<AppState>::view)))
+        val initState = NavState(listOf(NavItem(AppState(), Stateful<AppState>::view)))
         val state = StatefulWrapper(initState, this)
 
         Navigation.shared = object : Navigation {
-            override suspend fun push(x: Pair<Any, Stateful<Any>.() -> View>): Unit =
-                state.update { db -> db.copy(childs = db.childs + x) }
+            override suspend fun <T> push(x: NavItem<T>): Unit =
+                state.update { db -> db.copy(navStack = db.navStack + x) }
 
             override suspend fun pop(): Boolean =
                 state.dispatch { db ->
-                    if (db.childs.size == 1) db to false
-                    else db.copy(childs = db.childs.dropLast(1)) to true
+                    if (db.navStack.size == 1) db to false
+                    else db.copy(navStack = db.navStack.dropLast(1)) to true
                 }
         }
 

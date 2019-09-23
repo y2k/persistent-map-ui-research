@@ -12,7 +12,6 @@ import kotlinx.collections.immutable.PersistentMap
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
-@Suppress("UNCHECKED_CAST")
 object ViewFactory {
 
     private val cache = LruCache<Class<*>, Array<out Method>>(100)
@@ -39,6 +38,7 @@ object ViewFactory {
         return cls.constructors.first { it.parameterTypes.size == 1 }.newInstance(context) as View
     }
 
+    @Suppress("UNCHECKED_CAST")
     fun setProperty(view: View, key: String, value: Any) {
         println("LOGX :: Set property view ${view::class.java.simpleName}.$key = $value")
         val setterName = makeSetterName(key)

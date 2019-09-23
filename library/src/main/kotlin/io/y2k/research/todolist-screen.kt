@@ -57,8 +57,9 @@ fun Stateful<TodoState>.view() = run {
             row(
                 "gravity" to CENTER_H,
                 children to persistentListOf(
-                    roundButton("+",
-                        "onClickListener" to λ { effect__(WeatherDomain::navigateToCreate) }
+                    roundButton(
+                        "+",
+                        "onClickListener" to λ { effect(WeatherDomain::createClicked, Effects::navigateAsync) }
                     )
                 )
             )
@@ -70,8 +71,6 @@ object WeatherDomain {
     fun updateText(db: TodoState, text: String) = db.copy(text = text)
     fun removeAllTodos(db: TodoState) = db.copy(todos = persistentListOf())
     fun addTodo(db: TodoState) = db.copy(text = "", todos = db.todos + Item(db.text))
-    fun navigateToCreate(db: TodoState): Pair<TodoState, suspend () -> Unit> = run {
-        val nextPage = Navigation.mkNavItem(WeatherState(), Stateful<WeatherState>::view)
-        db to suspend { Navigation.shared.push(nextPage) }
-    }
+    fun createClicked(db: TodoState): Pair<TodoState, NavItem<WeatherState>> =
+        db to NavItem(WeatherState(), Stateful<WeatherState>::view)
 }

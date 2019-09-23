@@ -113,15 +113,6 @@ fun <Db, T, R, Z> Step<Db, T>.next(
     return Step(h, st)
 }
 
-fun <T, R> Stateful<T>.effect__(f: (T) -> Pair<T, suspend () -> R>): Step<T, R> {
-    val y = async {
-        val s = dispatch { db -> f(db) }
-        val z = s()
-        z
-    }
-    return Step(y, this)
-}
-
 class Step<Db, T>(val t: Deferred<T>, val st: Stateful<Db>)
 
 @Suppress("UNUSED_PARAMETER")

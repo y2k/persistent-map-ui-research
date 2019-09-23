@@ -21,6 +21,9 @@ object Colors {
     const val background = 0xfffafafa.toInt()
 }
 
+typealias View = PersistentMap<String, Any>
+typealias Views = PersistentList<View>
+
 fun button(text: String, onClick: λ<*>): PersistentMap<String, Any> =
     persistentMapOf(
         type to "Button",
