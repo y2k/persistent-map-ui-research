@@ -108,5 +108,5 @@ object Reconciliation {
 
     @Suppress("UNCHECKED_CAST")
     private fun mkView(actual: PersistentMap<String, Any>, context: Context): View =
-        ViewFactory.makeView(context, actual, false)
+        ViewFactory.makeView(context, actual)
 }

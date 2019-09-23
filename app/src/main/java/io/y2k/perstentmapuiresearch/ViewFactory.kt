@@ -2,18 +2,18 @@ package io.y2k.perstentmapuiresearch
 
 import android.content.Context
 import android.view.View
-import android.view.ViewGroup
 import android.widget.TextView
-import io.y2k.research.common.*
-import kotlinx.collections.immutable.PersistentList
+import io.y2k.research.common.children
+import io.y2k.research.common.memo
+import io.y2k.research.common.type
+import io.y2k.research.common.λ
 import kotlinx.collections.immutable.PersistentMap
-import kotlinx.collections.immutable.persistentListOf
 import java.lang.reflect.Proxy
 
 @Suppress("UNCHECKED_CAST")
 object ViewFactory {
 
-    fun makeView(context: Context, map: PersistentMap<String, Any>, rec: Boolean = true): View {
+    fun makeView(context: Context, map: PersistentMap<String, Any>): View {
         println("LOGX :: Make view ${map[type]}")
         val viewTypeName = map[type] as String
         val view = makeView(context, viewTypeName)
@@ -24,14 +24,6 @@ object ViewFactory {
         map.forEach { (key, value) ->
             if (key != type && key != children && key != memo && key != "@fabric")
                 setProperty(view, key, value)
-        }
-
-        if (rec) {
-            val children =
-                if (map.containsKey("@fabric")) persistentListOf((map["@fabric"] as MemoViewFactory).f())
-                else map[children] as? PersistentList<PersistentMap<String, Any>>
-            if (children != null)
-                addChildren(view as ViewGroup, children)
         }
 
         return view
@@ -78,10 +70,4 @@ object ViewFactory {
 
     private fun makeSetterName(key: String): String =
         "set" + key.substring(0..0).toUpperCase() + key.substring(1)
-
-    private fun addChildren(viewGroup: ViewGroup, children: PersistentList<PersistentMap<String, Any>>) {
-        children
-            .map { makeView(viewGroup.context, it) }
-            .forEach { viewGroup.addView(it) }
-    }
 }
