@@ -4,6 +4,7 @@ package io.y2k.research.common
 
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentMapOf
+import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Deferred
 import kotlinx.coroutines.async
@@ -89,7 +90,30 @@ object Resources {
     var button_background_round: Int = 0
 }
 
-fun <T, R> Stateful<T>.effect(f: (T) -> Pair<T, suspend () -> R>): Step<T, R> {
+fun <Db, Z, R> Stateful<Db>.effect(f: (Db) -> Pair<Db, Z>, a: (CoroutineScope, Z) -> Deferred<R>): Step<Db, R> {
+    val c = async {
+        val b = dispatch { db -> f(db) }
+        a(this, b).await()
+    }
+    return Step(c, this)
+}
+
+fun <Db, T, Z> Step<Db, T>.complete(f: (Db, Result<T>) -> Pair<Db, Z>): Step<Db, Unit> = next(f, ::None)
+
+fun <Db, T, R, Z> Step<Db, T>.next(
+    f: (Db, Result<T>) -> Pair<Db, Z>,
+    a: (CoroutineScope, Z) -> Deferred<R>
+): Step<Db, R> {
+    val h = st.async {
+        val x = runCatching { t.await() }
+        val y = st.dispatch { db -> f(db, x) }
+        val z = a(this, y)
+        z.await()
+    }
+    return Step(h, st)
+}
+
+fun <T, R> Stateful<T>.effect__(f: (T) -> Pair<T, suspend () -> R>): Step<T, R> {
     val y = async {
         val s = dispatch { db -> f(db) }
         val z = s()
@@ -100,13 +124,5 @@ fun <T, R> Stateful<T>.effect(f: (T) -> Pair<T, suspend () -> R>): Step<T, R> {
 
 class Step<Db, T>(val t: Deferred<T>, val st: Stateful<Db>)
 
-val None = suspend { Unit }
-
-fun <Db, T, R> Step<Db, T>.next(f: (Db, T) -> Pair<Db, suspend () -> R>): Step<Db, R> {
-    val y = st.async {
-        val x = t.await()
-        val z = st.dispatch { db -> f(db, x) }
-        z()
-    }
-    return Step(y, st)
-}
+@Suppress("UNUSED_PARAMETER")
+fun None(scope: CoroutineScope, ignore: Any?) = CompletableDeferred(Unit)

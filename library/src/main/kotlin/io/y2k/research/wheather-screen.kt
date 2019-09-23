@@ -14,6 +14,8 @@ import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.CENTER_V
 import io.y2k.research.common.Localization.Reload_Weather
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.coroutines.CoroutineScope
+import kotlinx.coroutines.async
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -37,7 +39,12 @@ fun Stateful<WeatherState>.view() =
             },
             button(
                 Reload_Weather.i18n,
-                λ { effect(TodoListDomain::mkRequest).next(TodoListDomain::handleResponse) })
+                λ {
+                    effect(
+                        TodoListDomain::mkRequest,
+                        Effects::loadWeatherFromWebAsync
+                    ).complete(TodoListDomain::handleResponse)
+                })
         )
     )
 
@@ -48,27 +55,26 @@ object TodoListDomain {
             val city = "Saint+Petersburg"
             url("http://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
         }
-        db.copy(temperature = "...", error = "") to
-                suspend { runCatching { Effects.loadWeatherFromWeb<WeatherResponse>(r) } }
+        db.copy(temperature = "...", error = "") to r
     }
 
-    fun handleResponse(db: WeatherState, r: Result<WeatherResponse>) = run {
-        fun mapToTemperature(response: WeatherResponse) = response.main.temp
+    fun handleResponse(db: WeatherState, r: Result<String>) = run {
+        fun toTemp(json: String) = Json.parse(WeatherResponse.serializer(), json).main.temp
         r.fold(
-            { db.copy(temperature = "${mapToTemperature(it)} C", error = "") },
+            { db.copy(temperature = "${toTemp(it)} C", error = "") },
             { db.copy(temperature = "--", error = "Error: ${it.message}") }
-        ) to None
+        ) to Unit
     }
 }
 
 object Effects {
     lateinit var apiKey: String
 
-    suspend inline fun <reified T> loadWeatherFromWeb(request: HttpRequestBuilder): T {
+    fun loadWeatherFromWebAsync(a: CoroutineScope, request: HttpRequestBuilder) = a.run {
         val client = HttpClient(AndroidClientEngine(AndroidEngineConfig())) {
-            install(JsonFeature) { serializer = KotlinxSerializer(Json.nonstrict) }
+            this.install(JsonFeature) { this.serializer = KotlinxSerializer(Json.nonstrict) }
         }
-        request.url.parameters.append("appid", apiKey)
-        return client.get(request)
+        request.url.parameters.append("appid", this@Effects.apiKey)
+        async { client.get<String>(request) }
     }
 }

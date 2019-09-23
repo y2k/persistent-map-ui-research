@@ -58,7 +58,7 @@ fun Stateful<TodoState>.view() = run {
                 "gravity" to CENTER_H,
                 children to persistentListOf(
                     roundButton("+",
-                        "onClickListener" to λ { effect(WeatherDomain::navigateToCreate) }
+                        "onClickListener" to λ { effect__(WeatherDomain::navigateToCreate) }
                     )
                 )
             )
