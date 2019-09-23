@@ -13,7 +13,7 @@ import java.lang.reflect.Proxy
 @Suppress("UNCHECKED_CAST")
 object ViewFactory {
 
-    fun makeView(context: Context, map: PersistentMap<String, Any>): View {
+    fun makeView(context: Context, map: PersistentMap<String, Any>, rec: Boolean = true): View {
         println("LOGX :: Make view ${map[type]}")
         val viewTypeName = map[type] as String
         val view = makeView(context, viewTypeName)
@@ -26,11 +26,13 @@ object ViewFactory {
                 setProperty(view, key, value)
         }
 
-        val children =
-            if (map.containsKey("@fabric")) persistentListOf((map["@fabric"] as MemoViewFactory).f())
-            else map[children] as? PersistentList<PersistentMap<String, Any>>
-        if (children != null)
-            addChildren(view as ViewGroup, children)
+        if (rec) {
+            val children =
+                if (map.containsKey("@fabric")) persistentListOf((map["@fabric"] as MemoViewFactory).f())
+                else map[children] as? PersistentList<PersistentMap<String, Any>>
+            if (children != null)
+                addChildren(view as ViewGroup, children)
+        }
 
         return view
     }

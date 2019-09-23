@@ -9,7 +9,6 @@ import io.y2k.research.common.children
 import io.y2k.research.common.memo
 import io.y2k.research.common.type
 import kotlinx.collections.immutable.*
-import kotlin.math.min
 
 object Reconciliation {
 
@@ -24,12 +23,16 @@ object Reconciliation {
         recursiveLevel++
         if (recursiveLevel == 1) propEqualsCount = 0
 
+        require(prevChildren.size == root.childCount) {
+            "${root::class.java.simpleName}[${root.childCount}] != ${prevChildren.size}, actual = ${actualChildren.size}"
+        }
+
         if (prevChildren.size > actualChildren.size)
             removeUnusedChildrenFrom(root, actualChildren.size)
         if (prevChildren.size < actualChildren.size)
             addNewChildren(root, actualChildren.subList(prevChildren.size, actualChildren.size))
-        for (i in 0 until min(prevChildren.size, actualChildren.size))
-            reconcileItem(prevChildren[i], actualChildren[i], root[i], root, i)
+        for (i in 0 until actualChildren.size)
+            reconcileItem(prevChildren.getOrElse(i) { persistentMapOf() }, actualChildren[i], root[i], root, i)
 
         if (recursiveLevel == 1) println("LOGX :: propEqualsCount = $propEqualsCount")
         recursiveLevel--
@@ -105,5 +108,5 @@ object Reconciliation {
 
     @Suppress("UNCHECKED_CAST")
     private fun mkView(actual: PersistentMap<String, Any>, context: Context): View =
-        ViewFactory.makeView(context, actual)
+        ViewFactory.makeView(context, actual, false)
 }
