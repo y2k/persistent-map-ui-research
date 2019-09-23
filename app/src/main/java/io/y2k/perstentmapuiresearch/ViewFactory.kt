@@ -3,15 +3,20 @@ package io.y2k.perstentmapuiresearch
 import android.content.Context
 import android.view.View
 import android.widget.TextView
+import androidx.collection.LruCache
 import io.y2k.research.common.children
 import io.y2k.research.common.memo
 import io.y2k.research.common.type
 import io.y2k.research.common.λ
 import kotlinx.collections.immutable.PersistentMap
+import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
 @Suppress("UNCHECKED_CAST")
 object ViewFactory {
+
+    private val cache = LruCache<Class<*>, Array<out Method>>(100)
+    private val methodCache = LruCache<List<Any>, Method>(200)
 
     fun makeView(context: Context, map: PersistentMap<String, Any>): View {
         println("LOGX :: Make view ${map[type]}")
@@ -38,8 +43,7 @@ object ViewFactory {
         println("LOGX :: Set property view ${view::class.java.simpleName}.$key = $value")
         val setterName = makeSetterName(key)
         if (setterName.endsWith("Listener")) {
-            val setter = view::class.java.methods
-                .find { it.name == setterName && it.parameterTypes.size == 1 }
+            val setter = findSetter(view, setterName)
                 ?: error("view=${view::class.java.simpleName}, method=$setterName, type=${value::class.java.simpleName}")
             val listener =
                 Proxy.newProxyInstance(view::class.java.classLoader, arrayOf(setter.parameterTypes[0])) { _, _, args ->
@@ -47,15 +51,27 @@ object ViewFactory {
                 }
             setter(view, listener)
         } else {
-            val setter = view::class.java.methods
-                .find {
-                    it.name == setterName
-                            && it.parameterTypes.size == 1
-                            && isAssignableFrom(it.parameterTypes[0], value)
-                }
+            val setter = findSetter(view, setterName, value)
                 ?: error("view=${view::class.java.simpleName}, method=$setterName, type=${value::class.java.simpleName}")
             setter(view, value)
         }
+    }
+
+    private fun findSetter(view: View, setterName: String, value: Any? = null): Method? {
+        val key = listOf(view::class.java, setterName, if (value == null) Unit::class.java else value::class.java)
+        return methodCache.get(key) ?: run {
+            val m = fastGetMethods(view).find {
+                it.name == setterName
+                        && it.parameterTypes.size == 1
+                        && (value == null || isAssignableFrom(it.parameterTypes[0], value))
+            }
+            m?.also { methodCache.put(key, m) }
+        }
+    }
+
+    private fun fastGetMethods(view: View): Array<out Method> {
+        val clazz = view::class.java
+        return cache.get(clazz) ?: clazz.methods.also { cache.put(clazz, it) }
     }
 
     private fun isAssignableFrom(clazz: Class<*>, value: Any): Boolean {
