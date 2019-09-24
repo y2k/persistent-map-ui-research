@@ -59,7 +59,7 @@ fun Stateful<TodoState>.view() = run {
                 children to persistentListOf(
                     roundButton(
                         "+",
-                        "onClickListener" to λ { effect(WeatherDomain::createClicked, Effects::navigateAsync) }
+                        "onClickListener" to λ { effect(WeatherDomain::createClicked) }
                     )
                 )
             )
@@ -71,6 +71,6 @@ object WeatherDomain {
     fun updateText(db: TodoState, text: String) = db.copy(text = text)
     fun removeAllTodos(db: TodoState) = db.copy(todos = persistentListOf())
     fun addTodo(db: TodoState) = db.copy(text = "", todos = db.todos + Item(db.text))
-    fun createClicked(db: TodoState): Pair<TodoState, NavItem<WeatherState>> =
-        db to NavItem(WeatherState(), Stateful<WeatherState>::view)
+    fun createClicked(db: TodoState) =
+        db to setOf(Navigate(NavItem(WeatherState(), Stateful<WeatherState>::view)))
 }

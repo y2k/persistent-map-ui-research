@@ -21,6 +21,13 @@ object Colors {
     const val background = 0xfffafafa.toInt()
 }
 
+object Resources {
+    var density: Float = 0f
+    var button_background: Int = 0
+    var button_background_white: Int = 0
+    var button_background_round: Int = 0
+}
+
 typealias View = PersistentMap<String, Any>
 typealias Views = PersistentList<View>
 

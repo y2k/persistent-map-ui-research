@@ -20,6 +20,10 @@ interface Navigation {
 
 fun Stateful<NavState>.view(): View = navItemView(state.navStack.last())
 
+class Navigate<T>(val nav: NavItem<T>) : Eff<Unit> {
+    override suspend fun invoke() = Navigation.shared.push(nav)
+}
+
 @Suppress("UNCHECKED_CAST")
 private fun <T> Stateful<NavState>.navItemView(navItem: NavItem<T>): PersistentMap<String, Any> {
     val childStateful: Stateful<T> = map(

@@ -1,10 +1,5 @@
 package io.y2k.research
 
-import io.ktor.client.HttpClient
-import io.ktor.client.engine.android.AndroidClientEngine
-import io.ktor.client.engine.android.AndroidEngineConfig
-import io.ktor.client.request.HttpRequestBuilder
-import io.ktor.client.request.get
 import io.ktor.client.request.request
 import io.ktor.client.request.url
 import io.y2k.research.common.*
@@ -12,8 +7,6 @@ import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.CENTER_V
 import io.y2k.research.common.Localization.Reload_Weather
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.coroutines.CoroutineScope
-import kotlinx.coroutines.async
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.json.Json
 
@@ -37,12 +30,7 @@ fun Stateful<WeatherState>.view() =
             },
             button(
                 Reload_Weather.i18n,
-                λ {
-                    effect(
-                        TodoListDomain::mkRequest,
-                        Effects::loadWeatherFromWebAsync
-                    ).complete(TodoListDomain::handleResponse)
-                })
+                λ { effect(TodoListDomain::mkRequest) })
         )
     )
 
@@ -53,26 +41,14 @@ object TodoListDomain {
             val city = "Saint+Petersburg"
             url("https://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
         }
-        db.copy(temperature = "...", error = "") to r
+        val eff = LoadFromWeb(r).updateStore(::handleResponse)
+        db.copy(temperature = "...", error = "") to setOf(eff)
     }
 
-    fun handleResponse(db: WeatherState, r: Result<String>) = run {
-        fun toTemp(json: String) = Json.nonstrict.parse(WeatherResponse.serializer(), json).main.temp
-        r.fold(
-            { db.copy(temperature = "${toTemp(it)} C", error = "") },
-            { db.copy(temperature = "--", error = "Error: ${it.message}") }
-        ) to Unit
-    }
-}
-
-object Effects {
-    lateinit var apiKey: String
-
-    fun navigateAsync(a: CoroutineScope, x: NavItem<*>) = a.async { Navigation.shared.push(x) }
-
-    fun loadWeatherFromWebAsync(scope: CoroutineScope, request: HttpRequestBuilder) = with(scope) {
-        val client = HttpClient(AndroidClientEngine(AndroidEngineConfig()))
-        request.url.parameters.append("appid", this@Effects.apiKey)
-        async { client.get<String>(request) }
-    }
+    fun handleResponse(db: WeatherState, result: Result<String>) =
+        result.mapCatching { Json.nonstrict.parse(WeatherResponse.serializer(), it) }
+            .fold(
+                { db.copy(temperature = "${it.main.temp} C", error = "") },
+                { db.copy(temperature = "--", error = "Error: ${it.message}") }
+            )
 }
