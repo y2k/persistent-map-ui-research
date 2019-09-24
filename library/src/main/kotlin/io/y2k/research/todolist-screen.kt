@@ -2,48 +2,25 @@ package io.y2k.research
 
 import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
-import io.y2k.research.common.Gravity.END
 import io.y2k.research.common.Gravity.NO_GRAVITY
-import io.y2k.research.common.Localization.Add_Now
-import io.y2k.research.common.Localization.New_todo_item
-import io.y2k.research.common.Localization.Remove_all
+import io.y2k.research.common.Localization.Reload
 import io.y2k.research.common.Localization.Today
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
-import kotlinx.collections.immutable.plus
 import kotlinx.collections.immutable.toPersistentList
 
-data class TodoState(val text: String = "", val todos: PersistentList<Item> = persistentListOf())
-data class Item(val text: String)
+data class TodoState(val text: String = "", val todos: PersistentList<String> = persistentListOf())
 
 fun Stateful<TodoState>.view() = run {
 
-    fun itemView(item: Item) =
+    fun itemView(item: String) =
         padding("0,8,0,8") {
-            h3(item.text)
+            h3("• $item")
         }
 
     column(
         "gravity" to NO_GRAVITY,
         children to persistentListOf(
-            editor(
-                state.text,
-                λ<String> { update { db -> WeatherDomain.updateText(db, it) } },
-                "hint" to New_todo_item.i18n
-            ),
-            freeze {
-                row(
-                    "gravity" to END,
-                    children to persistentListOf(
-                        padding(4) {
-                            button(Add_Now.i18n, λ { update(WeatherDomain::addTodo) })
-                        },
-                        padding(4) {
-                            whiteButton(Remove_all.i18n, λ { update(WeatherDomain::removeAllTodos) })
-                        }
-                    )
-                )
-            },
             padding(8) {
                 h1(Today.i18n, "gravity" to CENTER_H)
             },
@@ -62,15 +39,25 @@ fun Stateful<TodoState>.view() = run {
                         "onClickListener" to λ { effect(WeatherDomain::createClicked) }
                     )
                 )
-            )
+            ),
+            button(
+                Reload.i18n,
+                λ { effect(WeatherDomain::reload) })
         )
     )
 }
 
 object WeatherDomain {
-    fun updateText(db: TodoState, text: String) = db.copy(text = text)
-    fun removeAllTodos(db: TodoState) = db.copy(todos = persistentListOf())
-    fun addTodo(db: TodoState) = db.copy(text = "", todos = db.todos + Item(db.text))
-    fun createClicked(db: TodoState) =
-        db to setOf(Navigate(NavItem(WeatherState(), Stateful<WeatherState>::view)))
+
+    fun reload(db: TodoState) =
+        db to setOf(ReadAppStore.updateStore(::applyAppStore))
+
+    fun applyAppStore(db: TodoState, addDb: Result<ApplicationState>) =
+        addDb.fold(
+            { x -> db.copy(todos = x.todos.map { it.text }.toPersistentList()) },
+            { db }
+        )
+
+    fun createClicked(db: TodoState): Pair<TodoState, Set<Eff<*>>> =
+        db to setOf(Navigate(NavItem(CreateTodoState(), Stateful<CreateTodoState>::view)))
 }

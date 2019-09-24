@@ -10,7 +10,7 @@ data class AppState(
     val page: Int = 0,
     val pages: List<String> = listOf(Weather.i18n, Todo.i18n),
     val weather: WeatherState = WeatherState(),
-    val todo: TodoState = TodoState(todos = persistentListOf(Item("One"), Item("Two"), Item("Three")))
+    val todo: TodoState = TodoState()
 )
 
 fun Stateful<AppState>.view() =

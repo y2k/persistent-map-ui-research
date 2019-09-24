@@ -24,6 +24,12 @@ class Navigate<T>(val nav: NavItem<T>) : Eff<Unit> {
     override suspend fun invoke() = Navigation.shared.push(nav)
 }
 
+object NavigateBack : Eff<Unit> {
+    override suspend fun invoke() {
+        Navigation.shared.pop()
+    }
+}
+
 @Suppress("UNCHECKED_CAST")
 private fun <T> Stateful<NavState>.navItemView(navItem: NavItem<T>): PersistentMap<String, Any> {
     val childStateful: Stateful<T> = map(

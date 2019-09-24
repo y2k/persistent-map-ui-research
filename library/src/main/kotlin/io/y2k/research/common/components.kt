@@ -33,33 +33,47 @@ typealias Views = PersistentList<View>
 
 fun button(text: String, onClick: λ<*>): PersistentMap<String, Any> =
     persistentMapOf(
-        type to "Button",
+        type to "PaddingView",
+        "padding" to "12,12,12,12",
         "backgroundResource" to Resources.button_background,
-        "textColor" to Colors.white,
-        "text" to text,
-        "onClickListener" to onClick
+        "onClickListener" to onClick,
+        children to persistentListOf(
+            persistentMapOf(
+                type to "TextView",
+                "textSize" to 18f,
+                "textColor" to Colors.white,
+                "text" to text
+            )
+        )
     )
 
 fun whiteButton(text: String, onClick: λ<*>): PersistentMap<String, Any> =
     persistentMapOf(
-        type to "Button",
+        type to "PaddingView",
+        "padding" to "12,12,12,12",
         "backgroundResource" to Resources.button_background_white,
-        "textColor" to 0xff7e7878.toInt(),
-        "text" to text,
-        "onClickListener" to onClick
+        "onClickListener" to onClick,
+        children to persistentListOf(
+            persistentMapOf(
+                type to "TextView",
+                "textSize" to 18f,
+                "textColor" to 0xff7e7878.toInt(),
+                "text" to text
+            )
+        )
     )
 
-fun row(vararg items: Pair<String, Any>) =
+fun row(vararg props: Pair<String, Any>) =
     persistentMapOf(
         type to "LinearLayout",
         "orientation" to 0
-    ).plus(items.asIterable())
+    ).plus(props.asIterable())
 
-fun column(vararg items: Pair<String, Any>) =
+fun column(vararg props: Pair<String, Any>) =
     persistentMapOf(
         type to "LinearLayout",
         "orientation" to 1
-    ).plus(items.asIterable())
+    ).plus(props.asIterable())
 
 inline fun padding(padding: String, child: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(
@@ -71,19 +85,19 @@ inline fun padding(padding: String, child: () -> PersistentMap<String, Any>): Pe
 inline fun padding(all: Int, child: () -> PersistentMap<String, Any>): PersistentMap<String, Any> =
     padding("$all,$all,$all,$all", child)
 
-fun h1(text: String, vararg extra: Pair<String, Any>) =
-    persistentMapOf(type to "TextView", "textSize" to 48f, "text" to text) + extra
+fun h1(text: String, vararg props: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 48f, "text" to text) + props
 
-fun h2(text: String, vararg extra: Pair<String, Any>) =
-    persistentMapOf(type to "TextView", "textSize" to 36f, "text" to text) + extra
+fun h2(text: String, vararg props: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 36f, "text" to text) + props
 
-fun h3(text: String, vararg extra: Pair<String, Any>) =
-    persistentMapOf(type to "TextView", "textSize" to 22f, "text" to text) + extra
+fun h3(text: String, vararg props: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "textSize" to 22f, "text" to text) + props
 
-fun h4(text: String, vararg extra: Pair<String, Any>) =
-    persistentMapOf(type to "TextView", "text" to text) + extra
+fun h4(text: String, vararg props: Pair<String, Any>) =
+    persistentMapOf(type to "TextView", "text" to text) + props
 
-fun roundButton(text: String, vararg extra: Pair<String, Any>): PersistentMap<String, Any> =
+fun roundButton(text: String, vararg props: Pair<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(
         type to "Button",
         "backgroundResource" to Resources.button_background_round,
@@ -95,15 +109,15 @@ fun roundButton(text: String, vararg extra: Pair<String, Any>): PersistentMap<St
         "minimumHeight" to 0,
         "minHeight" to 0,
         "textColor" to Colors.white
-    ).putAll(extra)
+    ).putAll(props)
 
-fun editor(text: String, f: λ<String>, vararg extra: Pair<String, Any>): PersistentMap<String, Any> =
+fun editor(text: String, f: λ<String>, vararg props: Pair<String, Any>): PersistentMap<String, Any> =
     persistentMapOf(
         type to "EditTextWrapper",
         "text" to text,
         "onTextListener" to f,
         children to persistentListOf(
-            persistentMapOf(type to "EditText").putAll(extra)
+            persistentMapOf(type to "EditText").putAll(props)
         )
     )
 

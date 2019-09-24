@@ -28,6 +28,8 @@ class EditTextWrapper @JvmOverloads constructor(
 
     override fun addView(child: View?, index: Int, params: ViewGroup.LayoutParams?) {
         super.addView(child, index, params)
+        val p = (8 * resources.displayMetrics.density).toInt()
+        editText.setPadding(p, 2 * p, p, 2 * p)
         editText.setText(initText)
         editText.addTextChangedListener(textWatcher)
     }

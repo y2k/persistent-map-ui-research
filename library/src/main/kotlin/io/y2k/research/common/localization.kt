@@ -11,6 +11,7 @@ object Localization {
     val Add_Now = "+ Add Now" to "+ Добавить"
     val New_todo_item = "New todo item" to "Новая запись"
     val Reload_Weather = "Reload Weather" to "Перегрузить погоду"
+    val Reload = "Reload" to "Перегрузить"
 }
 
 val Pair<String, String>.i18n: String
