@@ -1,8 +1,11 @@
 package io.y2k.research
 
 import io.y2k.research.common.*
+import io.y2k.research.common.Localization.Todo
+import io.y2k.research.common.Localization.Weather
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
+import kotlinx.collections.immutable.toPersistentList
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.MainScope
 import kotlinx.coroutines.launch
@@ -21,24 +24,33 @@ object ReadAppStore : Eff<ApplicationState> {
 }
 
 fun CoroutineScope.main(updateContentView: (View) -> Unit) {
-    val initState = NavState(listOf(NavItem(TabsState(), Stateful<TabsState>::view)))
-    val state = StatefulWrapper(initState, this)
+    val state = initNavigation(
+        TabsState(
+            0,
+            persistentListOf(
+                TabItem(Weather.i18n, WeatherState(), Stateful<WeatherState>::view),
+                TabItem(Todo.i18n, TodoState(), Stateful<TodoState>::view)
+            )
+        ),
+        Stateful<TabsState>::view
+    )
+    val runtime = StatefulWrapper(state, this)
 
     Navigation.shared = object : Navigation {
         override suspend fun <T> push(x: NavItem<T>): Unit =
-            state.update { db -> db.copy(navStack = db.navStack + x) }
+            runtime.update { db -> db.copy(navStack = db.navStack.add(x)) }
 
         override suspend fun pop(): Boolean =
-            state.dispatch { db ->
+            runtime.dispatch { db ->
                 if (db.navStack.size == 1) db to false
-                else db.copy(navStack = db.navStack.dropLast(1)) to true
+                else db.copy(navStack = db.navStack.dropLast(1).toPersistentList()) to true
             }
     }
 
     launch {
-        val listener = state.makeListener()
+        val listener = runtime.makeListener()
         while (true) {
-            updateContentView(state.view())
+            updateContentView(runtime.view())
             listener.receive()
         }
     }
