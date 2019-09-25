@@ -21,7 +21,7 @@ object ReadAppStore : Eff<ApplicationState> {
 }
 
 fun CoroutineScope.main(updateContentView: (View) -> Unit) {
-    val initState = NavState(listOf(NavItem(AppState(), Stateful<AppState>::view)))
+    val initState = NavState(listOf(NavItem(TabsState(), Stateful<TabsState>::view)))
     val state = StatefulWrapper(initState, this)
 
     Navigation.shared = object : Navigation {

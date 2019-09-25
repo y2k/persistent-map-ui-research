@@ -6,14 +6,14 @@ import io.y2k.research.common.Localization.Weather
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
-data class AppState(
+data class TabsState(
     val page: Int = 0,
     val pages: List<String> = listOf(Weather.i18n, Todo.i18n),
     val weather: WeatherState = WeatherState(),
     val todo: TodoState = TodoState()
 )
 
-fun Stateful<AppState>.view() =
+fun Stateful<TabsState>.view() =
     column(
         "backgroundColor" to Colors.background,
         children to persistentListOf(
@@ -26,13 +26,13 @@ fun Stateful<AppState>.view() =
         )
     )
 
-private fun Stateful<AppState>.content() = when (state.page) {
+private fun Stateful<TabsState>.content() = when (state.page) {
     0 -> map({ it.weather }, { db, x -> db.copy(weather = x) }).view()
     1 -> map({ it.todo }, { db, x -> db.copy(todo = x) }).view()
     else -> error(state)
 }
 
-private fun Stateful<AppState>.tabsViews() =
+private fun Stateful<TabsState>.tabsViews() =
     state.pages
         .mapIndexed { i, x ->
             val button =

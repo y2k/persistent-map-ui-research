@@ -32,6 +32,7 @@ fun Stateful<CreateTodoState>.view() =
     }
 
 object CreateTodoDomain {
+
     fun textChanged(db: CreateTodoState, text: String) =
         db.copy(text = text)
 

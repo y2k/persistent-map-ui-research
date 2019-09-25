@@ -30,22 +30,22 @@ fun Stateful<WeatherState>.view() =
             },
             button(
                 Reload_Weather.i18n,
-                λ { effect(TodoListDomain::mkRequest) })
+                λ { effect(TodoListDomain::refreshPressed) })
         )
     )
 
 object TodoListDomain {
 
-    fun mkRequest(db: WeatherState) = run {
+    fun refreshPressed(db: WeatherState) = run {
         val r = request {
             val city = "Saint+Petersburg"
             url("https://api.openweathermap.org/data/2.5/weather?q=$city&units=metric&lang=en")
         }
-        val eff = LoadFromWeb(r).updateStore(::handleResponse)
+        val eff = LoadFromWeb(r).updateStore(::weatherLoaded)
         db.copy(temperature = "...", error = "") to setOf(eff)
     }
 
-    fun handleResponse(db: WeatherState, result: Result<String>) =
+    fun weatherLoaded(db: WeatherState, result: Result<String>) =
         result.mapCatching { Json.nonstrict.parse(WeatherResponse.serializer(), it) }
             .fold(
                 { db.copy(temperature = "${it.main.temp} C", error = "") },

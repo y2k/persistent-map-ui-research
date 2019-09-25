@@ -3,6 +3,7 @@ package io.y2k.research
 import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.NO_GRAVITY
+import io.y2k.research.common.Localization.Remove_all
 import io.y2k.research.common.Localization.Today
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
@@ -11,7 +12,7 @@ import kotlinx.collections.immutable.toPersistentList
 data class TodoState(val todos: PersistentList<String> = persistentListOf())
 
 fun Stateful<TodoState>.view() = run {
-    subscribeEffect(ReadAppStore, WeatherDomain::applyAppStore)
+    subscribeEffect(ReadAppStore, WeatherDomain::appStoreChanged)
 
     fun itemView(item: String) =
         padding("0,8,0,8") {
@@ -24,6 +25,10 @@ fun Stateful<TodoState>.view() = run {
             padding(8) {
                 h1(Today.i18n, "gravity" to CENTER_H)
             },
+            button(
+                Remove_all.i18n,
+                λ { effect(WeatherDomain::deleteAllPressed) }
+            ),
             expanded {
                 memo(state.todos) { todos ->
                     column(
@@ -46,7 +51,10 @@ fun Stateful<TodoState>.view() = run {
 
 object WeatherDomain {
 
-    fun applyAppStore(db: TodoState, addDb: Result<ApplicationState>) =
+    fun deleteAllPressed(db: TodoState) =
+        db to setOf(UpdateAppStore { appDb -> appDb.copy(todos = persistentListOf()) })
+
+    fun appStoreChanged(db: TodoState, addDb: Result<ApplicationState>) =
         addDb.fold(
             { x -> db.copy(todos = x.todos.map { it.text }.toPersistentList()) },
             { db }
