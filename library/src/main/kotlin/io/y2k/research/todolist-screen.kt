@@ -3,15 +3,15 @@ package io.y2k.research
 import io.y2k.research.common.*
 import io.y2k.research.common.Gravity.CENTER_H
 import io.y2k.research.common.Gravity.NO_GRAVITY
-import io.y2k.research.common.Localization.Reload
 import io.y2k.research.common.Localization.Today
 import kotlinx.collections.immutable.PersistentList
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.collections.immutable.toPersistentList
 
-data class TodoState(val text: String = "", val todos: PersistentList<String> = persistentListOf())
+data class TodoState(val todos: PersistentList<String> = persistentListOf())
 
 fun Stateful<TodoState>.view() = run {
+    subscribeEffect(ReadAppStore, WeatherDomain::applyAppStore)
 
     fun itemView(item: String) =
         padding("0,8,0,8") {
@@ -39,18 +39,12 @@ fun Stateful<TodoState>.view() = run {
                         "onClickListener" to λ { effect(WeatherDomain::createClicked) }
                     )
                 )
-            ),
-            button(
-                Reload.i18n,
-                λ { effect(WeatherDomain::reload) })
+            )
         )
     )
 }
 
 object WeatherDomain {
-
-    fun reload(db: TodoState) =
-        db to setOf(ReadAppStore.updateStore(::applyAppStore))
 
     fun applyAppStore(db: TodoState, addDb: Result<ApplicationState>) =
         addDb.fold(

@@ -21,12 +21,13 @@ interface Navigation {
 fun Stateful<NavState>.view(): View = navItemView(state.navStack.last())
 
 class Navigate<T>(val nav: NavItem<T>) : Eff<Unit> {
-    override suspend fun invoke() = Navigation.shared.push(nav)
-}
-
-object NavigateBack : Eff<Unit> {
     override suspend fun invoke() {
-        Navigation.shared.pop()
+        if (nav == Back) Navigation.shared.pop()
+        else Navigation.shared.push(nav)
+    }
+
+    companion object {
+        val Back = NavItem(Unit, { error("") })
     }
 }
 

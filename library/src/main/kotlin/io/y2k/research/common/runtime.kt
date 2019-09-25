@@ -26,8 +26,10 @@ class StatefulWrapper<State>(
 
     override fun <T> dispatch(f: (State) -> Pair<State, T>): T {
         val (s, r) = f(state)
-        state = s
-        channel.offer(Unit)
+        if (state != s) {
+            state = s
+            channel.offer(Unit)
+        }
         return r
     }
 }
@@ -35,16 +37,18 @@ class StatefulWrapper<State>(
 inline fun <State> Stateful<State>.update(crossinline f: (State) -> State) =
     dispatch { f(it) to Unit }
 
-fun <T, R> Stateful<T>.map(g: (T) -> R, f2: (T, R) -> T): Stateful<R> = run {
+fun <D, CD> Stateful<D>.map(g: (D) -> CD, f2: (D, CD) -> D): Stateful<CD> = run {
     val stateful = this
-    object : Stateful<R>, CoroutineScope by stateful {
-        override val state: R
+    object : Stateful<CD>, CoroutineScope by stateful {
+        override val state: CD
             get() = g(stateful.state)
 
-        override fun <X> dispatch(f: (R) -> Pair<R, X>): X =
+        override fun <T> dispatch(f: (CD) -> Pair<CD, T>): T =
             stateful.dispatch { db ->
-                val (a, b) = f(g(db))
-                f2(db, a) to b
+                val locDb = g(db)
+                val (newLocDb, t) = f(locDb)
+                if (newLocDb == locDb) db to t
+                else f2(db, newLocDb) to t
             }
     }
 }
@@ -54,9 +58,16 @@ inline fun <D> Stateful<D>.effect(crossinline f: (D) -> Pair<D, Set<Eff<*>>>) {
     launch {
         xs.forEach { e ->
             @Suppress("UNCHECKED_CAST")
-            if (e is FinishWithStore<*, *>) (e as FinishWithStore<*, D>).store = this@effect
+            if (e is ComposeEffect<*, *>) (e as ComposeEffect<*, D>).store = this@effect
             e()
         }
+    }
+}
+
+fun <D, T> Stateful<D>.subscribeEffect(eff: Eff<T>, f: (D, Result<T>) -> D) {
+    launch {
+        val x = runCatching { eff() }
+        update { db -> f(db, x) }
     }
 }
 

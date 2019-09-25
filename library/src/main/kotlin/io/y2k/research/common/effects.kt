@@ -10,7 +10,7 @@ interface Eff<T> {
     suspend operator fun invoke(): T
 }
 
-class FinishWithStore<T, D>(val a: Eff<T>, val f: (D, Result<T>) -> D) : Eff<Unit> {
+class ComposeEffect<T, D>(val a: Eff<T>, val f: (D, Result<T>) -> D) : Eff<Unit> {
     lateinit var store: Stateful<D>
     override suspend fun invoke() {
         val x = runCatching { a() }
@@ -19,7 +19,7 @@ class FinishWithStore<T, D>(val a: Eff<T>, val f: (D, Result<T>) -> D) : Eff<Uni
 }
 
 fun <T, D> Eff<T>.updateStore(f: (D, Result<T>) -> D) =
-    FinishWithStore(this, f)
+    ComposeEffect(this, f)
 
 class LoadFromWeb(val request: HttpRequestBuilder) : Eff<String> {
     override suspend fun invoke(): String {

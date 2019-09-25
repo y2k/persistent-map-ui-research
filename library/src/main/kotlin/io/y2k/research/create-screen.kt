@@ -37,6 +37,6 @@ object CreateTodoDomain {
 
     fun createPressed(db: CreateTodoState) =
         db.copy(text = "") to setOf(
-            NavigateBack,
+            Navigate(Navigate.Back),
             UpdateAppStore { it.copy(todos = it.todos.add(Item(db.text))) })
 }

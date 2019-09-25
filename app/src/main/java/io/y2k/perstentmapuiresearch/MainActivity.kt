@@ -3,9 +3,8 @@ package io.y2k.perstentmapuiresearch
 import android.os.Bundle
 import android.widget.FrameLayout
 import androidx.appcompat.app.AppCompatActivity
-import io.y2k.research.AppState
-import io.y2k.research.common.*
-import io.y2k.research.view
+import io.y2k.research.common.Navigation
+import io.y2k.research.main
 import kotlinx.collections.immutable.PersistentMap
 import kotlinx.collections.immutable.persistentListOf
 import kotlinx.coroutines.CoroutineScope
@@ -21,28 +20,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
         super.onCreate(savedInstanceState)
 
         setContentView(root)
-
-        val initState = NavState(listOf(NavItem(AppState(), Stateful<AppState>::view)))
-        val state = StatefulWrapper(initState, this)
-
-        Navigation.shared = object : Navigation {
-            override suspend fun <T> push(x: NavItem<T>): Unit =
-                state.update { db -> db.copy(navStack = db.navStack + x) }
-
-            override suspend fun pop(): Boolean =
-                state.dispatch { db ->
-                    if (db.navStack.size == 1) db to false
-                    else db.copy(navStack = db.navStack.dropLast(1)) to true
-                }
-        }
-
-        launch {
-            val listener = state.makeListener()
-            while (true) {
-                updateContentView(state.view())
-                listener.receive()
-            }
-        }
+        main(::updateContentView)
     }
 
     override fun onBackPressed() {
