@@ -8,6 +8,8 @@
             android:name=".App"
             android:theme="@style/Theme.AppCompat.Light.NoActionBar"
             android:label="Persistent Map UI">
+        <activity android:name=".WebViewActivity"
+                  android:exported="true"/>
         <activity android:name=".MainActivity"
                   android:exported="true"/>
         <activity android:name=".BenchmarkActivity"

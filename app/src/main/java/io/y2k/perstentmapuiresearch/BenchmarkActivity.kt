@@ -18,6 +18,8 @@ import kotlinx.coroutines.launch
 
 class BenchmarkActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
+    private val reconciliation = Reconciliation(AndroidViewFactory, AndroidFVG, AndroidFV)
+
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -55,11 +57,11 @@ class BenchmarkActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
         while (System.currentTimeMillis() - startTime < 5_000) {
             var actual = persistentListOf(StatefulWrapper(TodoState(), MainScope()).view())
-            Reconciliation.reconcile(prev, actual, container)
+            reconciliation.reconcile(prev, actual, container)
             prev = actual
 
             actual = persistentListOf(StatefulWrapper(WeatherState(), MainScope()).view())
-            Reconciliation.reconcile(prev, actual, container)
+            reconciliation.reconcile(prev, actual, container)
             prev = actual
             iter++
         }

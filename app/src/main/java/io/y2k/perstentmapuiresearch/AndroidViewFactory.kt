@@ -12,12 +12,12 @@ import kotlinx.collections.immutable.PersistentMap
 import java.lang.reflect.Method
 import java.lang.reflect.Proxy
 
-object ViewFactory {
+object AndroidViewFactory : ViewFactory<View> {
 
     private val cache = LruCache<Class<*>, Array<out Method>>(100)
     private val methodCache = LruCache<List<Any>, Method>(200)
 
-    fun makeView(context: Context, map: PersistentMap<String, Any>): View {
+    override fun makeView(context: Context, map: PersistentMap<String, Any>): View {
         println("LOGX :: Make view ${map[type]}")
         val viewTypeName = map[type] as String
         val view = makeView(context, viewTypeName)
@@ -39,7 +39,7 @@ object ViewFactory {
     }
 
     @Suppress("UNCHECKED_CAST")
-    fun setProperty(view: View, key: String, value: Any) {
+    override fun setProperty(view: View, key: String, value: Any) {
         println("LOGX :: Set property view ${view::class.java.simpleName}.$key = $value")
         val setterName = makeSetterName(key)
         if (setterName.endsWith("Listener")) {

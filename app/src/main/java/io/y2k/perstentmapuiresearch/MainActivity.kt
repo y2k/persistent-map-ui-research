@@ -13,6 +13,8 @@ import kotlinx.coroutines.launch
 
 class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
 
+    private val reconciliation = Reconciliation(AndroidViewFactory, AndroidFVG, AndroidFV)
+
     private val root by lazy { FrameLayout(this) }
     private var prevState = persistentListOf<PersistentMap<String, Any>>()
 
@@ -28,7 +30,7 @@ class MainActivity : AppCompatActivity(), CoroutineScope by MainScope() {
     }
 
     private fun updateContentView(view: PersistentMap<String, Any>) {
-        Reconciliation.reconcile(prevState, persistentListOf(view), root)
+        reconciliation.reconcile(prevState, persistentListOf(view), root)
         prevState = persistentListOf(view)
     }
 }
