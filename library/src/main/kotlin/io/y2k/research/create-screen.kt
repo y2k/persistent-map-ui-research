@@ -12,7 +12,7 @@ fun Stateful<CreateTodoState>.view() =
             children to persistentListOf(
                 editor(
                     state.text,
-                    λ<String> { update { db -> CreateTodoDomain.textChanged(db, it) } },
+                    λ<String> { replace { db -> CreateTodoDomain.textChanged(db, it) } },
                     "hint" to Localization.New_todo_item.i18n
                 ),
                 freeze {
@@ -22,7 +22,7 @@ fun Stateful<CreateTodoState>.view() =
                             padding(4) {
                                 button(
                                     Localization.Add_Now.i18n,
-                                    λ { effect { CreateTodoDomain.createPressed(it) } })
+                                    λ { update { CreateTodoDomain.createPressed(it) } })
                             }
                         )
                     )

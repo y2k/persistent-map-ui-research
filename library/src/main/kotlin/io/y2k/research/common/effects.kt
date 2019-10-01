@@ -14,12 +14,15 @@ class ComposeEffect<T, D>(val a: Eff<T>, val f: (D, Result<T>) -> D) : Eff<Unit>
     lateinit var store: Stateful<D>
     override suspend fun invoke() {
         val x = runCatching { a() }
-        store.update { db -> f(db, x) }
+        store.replace { db -> f(db, x) }
     }
 }
 
 fun <T, D> Eff<T>.updateStore(f: (D, Result<T>) -> D) =
     ComposeEffect(this, f)
+
+fun <T, D> Eff<T>.updateStoreSafe(f: (D, T) -> D) =
+    updateStore { db: D, r -> f(db, r.getOrThrow()) }
 
 class LoadFromWeb(val request: HttpRequestBuilder) : Eff<String> {
     override suspend fun invoke(): String {

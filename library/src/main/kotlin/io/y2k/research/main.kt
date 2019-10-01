@@ -16,7 +16,7 @@ data class Item(val text: String)
 val store = StatefulWrapper(ApplicationState(), MainScope())
 
 class UpdateAppStore(val f: (ApplicationState) -> ApplicationState) : Eff<Unit> {
-    override suspend fun invoke() = store.update { f(it) }
+    override suspend fun invoke() = store.replace { f(it) }
 }
 
 object ReadAppStore : Eff<ApplicationState> {
@@ -28,8 +28,8 @@ fun CoroutineScope.main(updateContentView: (View) -> Unit) {
         TabsState(
             0,
             persistentListOf(
-                TabItem(Weather.i18n, WeatherState(), Stateful<WeatherState>::view),
-                TabItem(Todo.i18n, TodoState(), Stateful<TodoState>::view)
+                TabItem(Weather.i18n, WeatherDomain.init().first, Stateful<WeatherState>::view),
+                TabItem(Todo.i18n, TodoListDomain.init().first, Stateful<TodoState>::view)
             )
         ),
         Stateful<TabsState>::view
@@ -38,7 +38,7 @@ fun CoroutineScope.main(updateContentView: (View) -> Unit) {
 
     Navigation.shared = object : Navigation {
         override suspend fun <T> push(x: NavItem<T>): Unit =
-            runtime.update { db -> db.copy(navStack = db.navStack.add(x)) }
+            runtime.replace { db -> db.copy(navStack = db.navStack.add(x)) }
 
         override suspend fun pop(): Boolean =
             runtime.dispatch { db ->

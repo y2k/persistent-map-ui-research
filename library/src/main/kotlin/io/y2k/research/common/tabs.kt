@@ -46,8 +46,8 @@ private fun Stateful<TabsState>.tabsViews(): Views =
     state.pages
         .mapIndexed { i, x ->
             val button =
-                if (i == state.page) button(x.title, λ { update { db -> db.copy(page = i) } })
-                else whiteButton(x.title, λ { update { db -> db.copy(page = i) } })
+                if (i == state.page) button(x.title, λ { replace { db -> db.copy(page = i) } })
+                else whiteButton(x.title, λ { replace { db -> db.copy(page = i) } })
             padding(4) {
                 button
             }

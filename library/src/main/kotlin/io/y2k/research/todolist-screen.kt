@@ -12,7 +12,7 @@ import kotlinx.collections.immutable.toPersistentList
 data class TodoState(val todos: PersistentList<String> = persistentListOf())
 
 fun Stateful<TodoState>.view() = run {
-    subscribeEffect(ReadAppStore, WeatherDomain::appStoreChanged)
+    onStarted(TodoListDomain.init().second)
 
     fun itemView(item: String) =
         padding("0,8,0,8") {
@@ -27,7 +27,7 @@ fun Stateful<TodoState>.view() = run {
             },
             button(
                 Remove_all.i18n,
-                λ { effect(WeatherDomain::deleteAllPressed) }
+                λ { update(TodoListDomain::deleteAllPressed) }
             ),
             expanded {
                 memo(state.todos) { todos ->
@@ -41,7 +41,7 @@ fun Stateful<TodoState>.view() = run {
                 children to persistentListOf(
                     roundButton(
                         "+",
-                        "onClickListener" to λ { effect(WeatherDomain::createClicked) }
+                        "onClickListener" to λ { update(TodoListDomain::createClicked) }
                     )
                 )
             )
@@ -49,16 +49,17 @@ fun Stateful<TodoState>.view() = run {
     )
 }
 
-object WeatherDomain {
+object TodoListDomain {
+
+    fun init() =
+        TodoState() to setOf(
+            ReadAppStore.updateStoreSafe { db: TodoState, shared ->
+                db.copy(todos = shared.todos.map { it.text }.toPersistentList())
+            }
+        )
 
     fun deleteAllPressed(db: TodoState) =
         db to setOf(UpdateAppStore { appDb -> appDb.copy(todos = persistentListOf()) })
-
-    fun appStoreChanged(db: TodoState, addDb: Result<ApplicationState>) =
-        addDb.fold(
-            { x -> db.copy(todos = x.todos.map { it.text }.toPersistentList()) },
-            { db }
-        )
 
     fun createClicked(db: TodoState): Pair<TodoState, Set<Eff<*>>> =
         db to setOf(Navigate(NavItem(CreateTodoState(), Stateful<CreateTodoState>::view)))

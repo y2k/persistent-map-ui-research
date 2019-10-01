@@ -34,7 +34,7 @@ class StatefulWrapper<State>(
     }
 }
 
-inline fun <State> Stateful<State>.update(crossinline f: (State) -> State) =
+inline fun <State> Stateful<State>.replace(crossinline f: (State) -> State) =
     dispatch { f(it) to Unit }
 
 fun <D, CD> Stateful<D>.map(g: (D) -> CD, f2: (D, CD) -> D): Stateful<CD> = run {
@@ -53,23 +53,27 @@ fun <D, CD> Stateful<D>.map(g: (D) -> CD, f2: (D, CD) -> D): Stateful<CD> = run 
     }
 }
 
-inline fun <D> Stateful<D>.effect(crossinline f: (D) -> Pair<D, Set<Eff<*>>>) {
+inline fun <D> Stateful<D>.update(crossinline f: (D) -> Pair<D, Set<Eff<*>>>) {
     val xs = dispatch { f(it) }
     launch {
         xs.forEach { e ->
             @Suppress("UNCHECKED_CAST")
-            if (e is ComposeEffect<*, *>) (e as ComposeEffect<*, D>).store = this@effect
+            if (e is ComposeEffect<*, *>) (e as ComposeEffect<*, D>).store = this@update
             e()
         }
     }
 }
 
+@Deprecated("")
 fun <D, T> Stateful<D>.subscribeEffect(eff: Eff<T>, f: (D, Result<T>) -> D) {
     launch {
         val x = runCatching { eff() }
-        update { db -> f(db, x) }
+        replace { db -> f(db, x) }
     }
 }
+
+// FIXME:
+fun <D> Stateful<D>.onStarted(effs: Set<Eff<*>>) = Unit
 
 const val type = "@"
 const val children = "@children"

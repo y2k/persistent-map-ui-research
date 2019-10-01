@@ -17,7 +17,9 @@ class WeatherResponse(val main: Main) {
     class Main(val temp: Double)
 }
 
-fun Stateful<WeatherState>.view() =
+fun Stateful<WeatherState>.view() = run {
+    onStarted(WeatherDomain.init().second)
+
     column(
         "gravity" to CENTER_V,
         children to persistentListOf(
@@ -30,11 +32,15 @@ fun Stateful<WeatherState>.view() =
             },
             button(
                 Reload_Weather.i18n,
-                λ { effect(TodoListDomain::refreshPressed) })
+                λ { update(WeatherDomain::refreshPressed) })
         )
     )
+}
 
-object TodoListDomain {
+object WeatherDomain {
+
+    fun init() =
+        refreshPressed(WeatherState())
 
     fun refreshPressed(db: WeatherState) = run {
         val r = request {
